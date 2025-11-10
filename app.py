@@ -178,7 +178,7 @@ def get_students_by_sport():
         client = gspread.authorize(creds)
         # --- END: NEW AUTHENTICATION ---
         
-        sheet_url = 'https://docs.google.com/spreadsheets/d/1g_Uh2c4WxhjFiMRxcAIlTQ1obgS_ka8R5e8F76ntrgo/edit?gid=512331806#gid=512331806' # PASTE YOUR GOOGLE SHEET URL
+        sheet_url = 'https://docs.google.com/spreadsheets/d/1YiXrlu6qxtorsoDThvB62HTVSuWE9BhQ9J-pbFH6dGc/edit?gid=0#gid=0' # PASTE YOUR GOOGLE SHEET URL
         spreadsheet = client.open_by_url(sheet_url)
         sheet = spreadsheet.sheet1
         data = sheet.get_all_records()
