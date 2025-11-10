@@ -4,6 +4,8 @@ import pandas as pd
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import traceback
+import os
+import json
 
 app = Flask(__name__)
 
@@ -21,11 +23,19 @@ def get_data():
         # Define the scope of the APIs
         scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
         
-        # Add credentials to the account
-        creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
+        # --- NEW: DUAL-MODE AUTHENTICATION ---
+        # Try to load from environment variable (for Render)
+        creds_json_str = os.environ.get('GCP_CREDS')
+        if creds_json_str:
+            creds_dict = json.loads(creds_json_str)
+            creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+        else:
+            # Fallback to local file (for local testing)
+            creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
         
         # Authorize the clientsheet 
         client = gspread.authorize(creds)
+        # --- END: NEW AUTHENTICATION ---
         
         # The name of your Google Sheet
         sheet_name = 'Sports Achiver`s 2025-26' 
@@ -154,8 +164,20 @@ def get_students_by_sport():
 
     try:
         scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
-        creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
+        
+        # --- NEW: DUAL-MODE AUTHENTICATION ---
+        # Try to load from environment variable (for Render)
+        creds_json_str = os.environ.get('GCP_CREDS')
+        if creds_json_str:
+            creds_dict = json.loads(creds_json_str)
+            creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+        else:
+            # Fallback to local file (for local testing)
+            creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
+        
         client = gspread.authorize(creds)
+        # --- END: NEW AUTHENTICATION ---
+        
         sheet_url = 'https://docs.google.com/spreadsheets/d/1g_Uh2c4WxhjFiMRxcAIlTQ1obgS_ka8R5e8F76ntrgo/edit?gid=512331806#gid=512331806' # PASTE YOUR GOOGLE SHEET URL
         spreadsheet = client.open_by_url(sheet_url)
         sheet = spreadsheet.sheet1
@@ -164,7 +186,7 @@ def get_students_by_sport():
 
         df['Sport'] = df['Sport'].str.strip().str.title()
         df['NAME OF STUDENT'] = df['NAME OF STUDENT'].astype(str).str.strip()
-        df['GENDER'] = df['GENDER'].astype(str).str.strip().str.title()
+        df['GENDERR'] = df['GENDER'].astype(str).str.strip().str.title()
         df['School'] = df['School'].astype(str).str.strip()
 
         # Filter for the selected sport
