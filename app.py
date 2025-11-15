@@ -9,6 +9,42 @@ import json
 
 app = Flask(__name__)
 
+# --- NEW HELPER FUNCTION 1: Authentication ---
+def get_gspread_client():
+    """
+    Authenticates with Google Sheets using dual-mode (Env Var or local file)
+    and returns the gspread client.
+    """
+    scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
+    
+    # Try to load from environment variable (for Render)
+    creds_json_str = os.environ.get('GCP_CREDS')
+    if creds_json_str:
+        creds_dict = json.loads(creds_json_str)
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+    else:
+        # Fallback to local file (for local testing)
+        creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
+    
+    # Authorize the client
+    return gspread.authorize(creds)
+
+# --- NEW HELPER FUNCTION 2: Data Fetching ---
+def get_sheet_dataframe():
+    """
+    Connects to Google Sheets and returns the main data as a pandas DataFrame.
+    """
+    client = get_gspread_client()
+    
+    # Use the URL to open the sheet (more reliable)
+    # Make sure this URL is correct and your service account has access
+    sheet_url = 'https://docs.google.com/spreadsheets/d/1YiXrlu6qxtorsoDThvB62HTVSuWE9BhQ9J-pbFH6dGc/edit?gid=0#gid=0'
+    spreadsheet = client.open_by_url(sheet_url)
+    sheet = spreadsheet.sheet1
+    
+    data = sheet.get_all_records()
+    return pd.DataFrame(data)
+
 @app.route('/')
 def home():
     """Serves the main dashboard page."""
@@ -16,42 +52,14 @@ def home():
 
 @app.route('/api/data')
 def get_data():
-    """Reads raw data from GOOGLE SHEETS, applies filters, and calculates all metrics."""
+    """
+    Reads raw data, applies filters, and calculates all metrics.
+    """
     try:
-        # --- START: MODIFIED SECTION TO READ FROM GOOGLE SHEETS ---
-        
-        # Define the scope of the APIs
-        scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
-        
-        # --- NEW: DUAL-MODE AUTHENTICATION ---
-        # Try to load from environment variable (for Render)
-        creds_json_str = os.environ.get('GCP_CREDS')
-        if creds_json_str:
-            creds_dict = json.loads(creds_json_str)
-            creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-        else:
-            # Fallback to local file (for local testing)
-            creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
-        
-        # Authorize the clientsheet 
-        client = gspread.authorize(creds)
-        # --- END: NEW AUTHENTICATION ---
-        
-        # The name of your Google Sheet
-        sheet_name = 'Sports Achiver`s 2025-26' 
-        
-        # Get the sheet
-        sheet = client.open(sheet_name).sheet1
-        
-        # Get all of the records from the sheet and convert to a pandas DataFrame
-        data = sheet.get_all_records()
-        df = pd.DataFrame(data)
+        # --- MODIFIED: Use helper function ---
+        df = get_sheet_dataframe()
+        # --- END: MODIFIED ---
 
-        # --- END: MODIFIED SECTION ---
-
-
-        # vvv ALL OF YOUR EXISTING LOGIC BELOW THIS LINE REMAINS UNCHANGED vvv
-        
         id_column = 'SR. NO'
         id_col = 'NAME OF STUDENT'
 
@@ -61,6 +69,7 @@ def get_data():
         df['Sport'] = df['Sport'].str.strip().str.title()
         df['GENDER'] = df['GENDER'].str.strip().str.title()
         df['School'] = df['School'].str.strip()
+        df['RESULTS'] = df['RESULTS'].str.strip() # Added cleaning for 'RESULTS'
 
         # --- CROSS-FILTERING LOGIC ---
         filter_gender = request.args.get('GENDER')
@@ -75,12 +84,10 @@ def get_data():
         
         kpi_metrics = {
             'totalAchievements': len(df),
-            'totalAthletes': df[id_col].nunique(),
             'totalPoints': int(pd.to_numeric(df['POINT'], errors='coerce').sum()) if 'POINT' in df.columns and len(df) > 0 else 0,
             'uniqueSports': df['Sport'].nunique()
         }
         
-        # (The rest of your file continues here, unchanged...)
         # --- Prepare data for charts ---
         
         school_counts = df['School'].value_counts().reset_index()
@@ -163,30 +170,14 @@ def get_students_by_sport():
         return jsonify({"error": "Sport name is required"}), 400
 
     try:
-        scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
-        
-        # --- NEW: DUAL-MODE AUTHENTICATION ---
-        # Try to load from environment variable (for Render)
-        creds_json_str = os.environ.get('GCP_CREDS')
-        if creds_json_str:
-            creds_dict = json.loads(creds_json_str)
-            creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-        else:
-            # Fallback to local file (for local testing)
-            creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
-        
-        client = gspread.authorize(creds)
-        # --- END: NEW AUTHENTICATION ---
-        
-        sheet_url = 'https://docs.google.com/spreadsheets/d/1YiXrlu6qxtorsoDThvB62HTVSuWE9BhQ9J-pbFH6dGc/edit?gid=0#gid=0' # PASTE YOUR GOOGLE SHEET URL
-        spreadsheet = client.open_by_url(sheet_url)
-        sheet = spreadsheet.sheet1
-        data = sheet.get_all_records()
-        df = pd.DataFrame(data)
+        # --- MODIFIED: Use helper function ---
+        df = get_sheet_dataframe()
+        # --- END: MODIFIED ---
 
+        # Clean the columns needed for this endpoint
         df['Sport'] = df['Sport'].str.strip().str.title()
         df['NAME OF STUDENT'] = df['NAME OF STUDENT'].astype(str).str.strip()
-        df['GENDERR'] = df['GENDER'].astype(str).str.strip().str.title()
+        df['GENDER'] = df['GENDER'].astype(str).str.strip().str.title() # <-- FIXED TYPO
         df['School'] = df['School'].astype(str).str.strip()
 
         # Filter for the selected sport
@@ -204,6 +195,8 @@ def get_students_by_sport():
         return jsonify({"error": error_msg}), 500 
     
     
-
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    # Use os.environ.get('PORT', 5000) for Render compatibility
+    port = int(os.environ.get('PORT', 5000))
+    # Set debug=False for production on Render
+    app.run(debug=False, host='0.0.0.0', port=port)

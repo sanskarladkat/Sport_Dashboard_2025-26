@@ -30,7 +30,7 @@
         .chart-card h3 { margin-top: 0; margin-bottom: 20px; text-align: center; color: var(--text-color); font-weight: 600; }
         .apexcharts-yaxis-label { white-space: nowrap !important; }
 
-        /* --- NEW: Style for the modal pop-up --- */
+        /* --- Style for the modal pop-up --- */
         .modal {
             display: none; /* Hidden by default */
             position: fixed; 
@@ -84,8 +84,7 @@
         </header>
 
         <div class="kpi-container">
-            <div class="kpi-card"><p class="value" id="totalAchievementsValue">0</p><p class="label">Total Achievements</p></div>
-            <div class="kpi-card"><p class="value" id="totalAthletesValue">0</p><p class="label">Total Athletes</p></div>
+            <div class="kpi-card"><p class="value" id="totalAchievementsValue">0</p><p class="label">Total Athlets Achievements</p></div>
             <div class="kpi-card"><p class="value" id="totalPointsValue">0</p><p class="label">Total Points</p></div>
             <div class="kpi-card"><p class="value" id="uniqueSportsValue">0</p><p class="label">Unique Sports</p></div>
         </div>
@@ -93,8 +92,8 @@
         <div class="charts-grid">
             <div class="chart-card"><h3 >Top 5 Achievement Types</h3><div id="achievementTypesChart"></div></div>
             <div class="chart-card"><h3 >Gender Distribution of Athletes</h3><div id="genderDistributionChart"></div></div>
-            <div class="chart-card"><h3 >All Achievements</h3><div id="achievementPieChart"></div></div>
             <div class="chart-card"><h3 >All Sports Participated by Athletes</h3><div id="sportsPieChart"></div></div>
+            <div class="chart-card"><h3 >All Achievements</h3><div id="achievementPieChart"></div></div>
             <div class="chart-card"><h3 >School-wise Achievements</h3><div id="schoolParticipationChart"></div></div>
             <div class="chart-card"><h3 >Top 6 Popular Sports</h3><div id="popularSportsChart"></div></div>
             
@@ -129,7 +128,7 @@
         const themeSwitcher = document.getElementById('themeSwitcher');
         const resetBtn = document.getElementById('resetFiltersBtn');
 
-        // --- NEW: Modal Control Logic ---
+        // --- Modal Control Logic ---
         const modal = document.getElementById('studentModal');
         const closeModalBtn = document.querySelector('.close-button');
 
@@ -141,45 +140,46 @@
         }
 
         async function fetchAndShowStudents(sportName) {
-    const modalTitle = document.getElementById('modalTitle');
-    const tableBody = document.getElementById('studentTableBody');
+            const modalTitle = document.getElementById('modalTitle');
+            const tableBody = document.getElementById('studentTableBody');
 
-    // Show a loading message
-    modalTitle.innerText = `Students in ${sportName}`;
-    tableBody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
-    modal.style.display = 'block';
+            // Show a loading message
+            modalTitle.innerText = `Students in ${sportName}`;
+            tableBody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
+            modal.style.display = 'block';
 
-    try {
-        const response = await fetch(`/api/students_by_sport?sport=${encodeURIComponent(sportName)}`);
-        const students = await response.json();
+            try {
+                const response = await fetch(`/api/students_by_sport?sport=${encodeURIComponent(sportName)}`);
+                const students = await response.json();
+                
+                tableBody.innerHTML = ''; // Clear loading message
+
+                if (students.length > 0) {
+                    // Sort students alphabetically by name before displaying
+                    students.sort((a, b) => a['NAME OF STUDENT'].localeCompare(b['NAME OF STUDENT']));
+                    
+                    let serialNumber = 1; // Initialize the counter
+                    
+                    students.forEach(student => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td style="padding: 8px; border-bottom: 1px solid var(--border-color);">${serialNumber}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid var(--border-color);">${student['NAME OF STUDENT']}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid var(--border-color);">${student['GENDER']}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid var(--border-color);">${student['School']}</td>
+                        `;
+                        tableBody.appendChild(row);
+                        serialNumber++; // Increment the counter for the next row
+                    });
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="4">No students found for this sport.</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error fetching student list:', error);
+                tableBody.innerHTML = '<tr><td colspan="4">Could not load student list.</td></tr>';
+            }
+        }       
         
-        tableBody.innerHTML = ''; // Clear loading message
-
-        if (students.length > 0) {
-            // Sort students alphabetically by name before displaying
-            students.sort((a, b) => a['NAME OF STUDENT'].localeCompare(b['NAME OF STUDENT']));
-            
-            let serialNumber = 1; // Initialize the counter
-            
-            students.forEach(student => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td style="padding: 8px; border-bottom: 1px solid var(--border-color);">${serialNumber}</td>
-                    <td style="padding: 8px; border-bottom: 1px solid var(--border-color);">${student['NAME OF STUDENT']}</td>
-                    <td style="padding: 8px; border-bottom: 1px solid var(--border-color);">${student['GENDER']}</td>
-                    <td style="padding: 8px; border-bottom: 1px solid var(--border-color);">${student['School']}</td>
-                `;
-                tableBody.appendChild(row);
-                serialNumber++; // Increment the counter for the next row
-            });
-        } else {
-            tableBody.innerHTML = '<tr><td colspan="4">No students found for this sport.</td></tr>';
-        }
-    } catch (error) {
-        console.error('Error fetching student list:', error);
-        tableBody.innerHTML = '<tr><td colspan="4">Could not load student list.</td></tr>';
-    }
-}      
         async function fetchDataAndRenderCharts() {
             updateResetButtonVisibility();
             const params = new URLSearchParams(activeFilters);
@@ -211,24 +211,23 @@
         // --- CHART DEFINITIONS ---
 
         function renderAchievementTypesBarChart(d) {
-             const options = { series: [{ name: 'Count', data: d.map(i => i.Count) }], chart: { type: 'bar', height: 350 }, plotOptions: { bar: { horizontal: true } }, xaxis: { categories: d.map(i => i.Type) }, tooltip: { y: { title: { formatter: () => 'Count:' } } }, theme: { mode: getCurrentChartTheme() } };
-            charts.achievementBar = new ApexCharts(document.querySelector("#achievementTypesChart"), options);
-            charts.achievementBar.render();
+                const options = { series: [{ name: 'Count', data: d.map(i => i.Count) }], chart: { type: 'bar', height: 350 }, plotOptions: { bar: { horizontal: true } }, xaxis: { categories: d.map(i => i.Type) }, tooltip: { y: { title: { formatter: () => 'Count:' } } }, theme: { mode: getCurrentChartTheme() } };
+                charts.achievementBar = new ApexCharts(document.querySelector("#achievementTypesChart"), options);
+                charts.achievementBar.render();
         }
 
         function renderPopularSportsBarChart(d) {
-            const options = { series: [{ name: 'Participants', data: d.map(i => i.Participants) }], chart: { type: 'bar', height: 350 }, plotOptions: { bar: { horizontal: true, distributed: true } }, xaxis: { categories: d.map(i => i.Sport) }, legend: { show: false }, theme: { mode: getCurrentChartTheme() } };
-            charts.popularBar = new ApexCharts(document.querySelector("#popularSportsChart"), options);
-            charts.popularBar.render();
+                const options = { series: [{ name: 'Participants', data: d.map(i => i.Participants) }], chart: { type: 'bar', height: 350 }, plotOptions: { bar: { horizontal: true, distributed: true } }, xaxis: { categories: d.map(i => i.Sport) }, legend: { show: false }, theme: { mode: getCurrentChartTheme() } };
+                charts.popularBar = new ApexCharts(document.querySelector("#popularSportsChart"), options);
+                charts.popularBar.render();
         }
 
         function renderAchievementPieChart(d) {
-            const options = { series: d.series, chart: { type: 'pie', height: 450 }, labels: d.labels, legend: { position: 'bottom' }, theme: { mode: getCurrentChartTheme() } };
-            charts.achievementPie = new ApexCharts(document.querySelector("#achievementPieChart"), options);
-            charts.achievementPie.render();
+                const options = { series: d.series, chart: { type: 'pie', height: 450 }, labels: d.labels, legend: { position: 'bottom' }, theme: { mode: getCurrentChartTheme() } };
+                charts.achievementPie = new ApexCharts(document.querySelector("#achievementPieChart"), options);
+                charts.achievementPie.render();
         }
         
-        // --- UPDATED: renderSportsPieChart with click event ---
         function renderSportsPieChart(d) {
             const options = {
                 series: d.series,
@@ -251,9 +250,67 @@
         }
 
         // --- (Other existing functions) ---
-        const currentTheme = localStorage.getItem('theme'); if (currentTheme) document.body.classList.add(currentTheme); themeSwitcher.addEventListener('click', () => { document.body.classList.toggle('dark-theme'); let theme = document.body.classList.contains('dark-theme') ? 'dark-theme' : ''; localStorage.setItem('theme', theme); updateAllChartThemes(); }); resetBtn.addEventListener('click', () => { activeFilters = {}; fetchDataAndRenderCharts(); }); function applyFilter(key, value) { if (activeFilters[key] === value) { delete activeFilters[key]; } else { activeFilters[key] = value; } fetchDataAndRenderCharts(); } function updateResetButtonVisibility() { resetBtn.style.display = Object.keys(activeFilters).length > 0 ? 'inline-block' : 'none'; } document.addEventListener('DOMContentLoaded', fetchDataAndRenderCharts); function updateKpiCards(kpiData) { document.getElementById('totalAchievementsValue').innerText = kpiData.totalAchievements.toLocaleString(); document.getElementById('totalAthletesValue').innerText = kpiData.totalAthletes.toLocaleString(); document.getElementById('totalPointsValue').innerText = kpiData.totalPoints.toLocaleString(); document.getElementById('uniqueSportsValue').innerText = kpiData.uniqueSports.toLocaleString(); } function getCurrentChartTheme() { return document.body.classList.contains('dark-theme') ? 'dark' : 'light'; } function updateAllChartThemes() { const newTheme = { theme: { mode: getCurrentChartTheme() } }; Object.values(charts).forEach(chart => chart?.updateOptions(newTheme)); }
+        const currentTheme = localStorage.getItem('theme'); if (currentTheme) document.body.classList.add(currentTheme); themeSwitcher.addEventListener('click', () => { document.body.classList.toggle('dark-theme'); let theme = document.body.classList.contains('dark-theme') ? 'dark-theme' : ''; localStorage.setItem('theme', theme); updateAllChartThemes(); }); resetBtn.addEventListener('click', () => { activeFilters = {}; fetchDataAndRenderCharts(); }); function applyFilter(key, value) { if (activeFilters[key] === value) { delete activeFilters[key]; } else { activeFilters[key] = value; } fetchDataAndRenderCharts(); } function updateResetButtonVisibility() { resetBtn.style.display = Object.keys(activeFilters).length > 0 ? 'inline-block' : 'none'; } document.addEventListener('DOMContentLoaded', fetchDataAndRenderCharts);
+        
+        // --- This function is FIXED ---
+        function updateKpiCards(kpiData) { 
+            document.getElementById('totalAchievementsValue').innerText = kpiData.totalAchievements.toLocaleString(); 
+            document.getElementById('totalPointsValue').innerText = kpiData.totalPoints.toLocaleString(); 
+            document.getElementById('uniqueSportsValue').innerText = kpiData.uniqueSports.toLocaleString(); 
+        } 
+        
+        function getCurrentChartTheme() { return document.body.classList.contains('dark-theme') ? 'dark' : 'light'; } function updateAllChartThemes() { const newTheme = { theme: { mode: getCurrentChartTheme() } }; Object.values(charts).forEach(chart => chart?.updateOptions(newTheme)); }
         function renderSchoolChart(d) { const options = { series: [{ name: 'Achievements', data: d.map(i => i.Achievements) }], chart: { type: 'bar', height: 350, events: { dataPointSelection: (e, chart, config) => { const selectedSchool = config.w.globals.labels[config.dataPointIndex]; applyFilter('School', selectedSchool); } } }, plotOptions: { bar: { horizontal: true, barHeight: '60%', distributed: true } }, dataLabels: { enabled: true, textAnchor: 'end', offsetX: -10, style: { colors: ['#fff'] }, formatter: (v) => v }, xaxis: { categories: d.map(i => i.School) }, yaxis: { labels: { show: true, style: { colors: [getCurrentChartTheme() === 'light' ? '#333' : '#eee'] } } }, legend: { show: false }, tooltip: { y: { formatter: (v, { seriesIndex, dataPointIndex, w }) => { const schoolName = w.globals.labels[dataPointIndex]; return `${schoolName}: ${v} Achievements`; }, title: { formatter: () => '' } } }, theme: { mode: getCurrentChartTheme() } }; charts.school = new ApexCharts(document.querySelector("#schoolParticipationChart"), options); charts.school.render(); }
-        function renderGenderChart(d) { const options = { series: d.series, chart: { type: 'donut', height: 350, events: { dataPointSelection: (e, chart, config) => { const selectedGender = config.w.globals.labels[config.dataPointIndex]; applyFilter('GENDER', selectedGender); } } }, labels: d.labels, plotOptions: { pie: { donut: { labels: { show: true, total: { show: true, label: 'Total Athletes' } } } } }, legend: { position: 'bottom' }, theme: { mode: getCurrentChartTheme() } }; charts.gender = new ApexCharts(document.querySelector("#genderDistributionChart"), options); charts.gender.render(); }
+        
+        // --- *** THIS FUNCTION IS NOW UPDATED WITH COLORS *** ---
+        function renderGenderChart(d) {
+            // --- UPDATED: Define colors based on your specific request ---
+            const colorMap = {
+                'Boys': '#3366FF',  // Assign blue to Boys
+                'Girls': '#00E396' // Assign green to Girls
+            };
+            // This creates the color array in the correct order
+            const orderedColors = d.labels.map(label => colorMap[label] || '#808080');
+            // --- END UPDATED ---
+
+            const options = {
+                series: d.series,
+                colors: orderedColors, // <-- Use the new ordered color array
+                chart: {
+                    type: 'donut',
+                    height: 350,
+                    events: {
+                        dataPointSelection: (e, chart, config) => {
+                            const selectedGender = config.w.globals.labels[config.dataPointIndex];
+                            applyFilter('GENDER', selectedGender);
+                        }
+                    }
+                },
+                labels: d.labels,
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            labels: {
+                                show: true,
+                                total: {
+                                    show: true,
+                                    label: 'Total Athletes'
+                                }
+                            }
+                        }
+                    }
+                },
+                legend: {
+                    position: 'bottom'
+                },
+                theme: {
+                    mode: getCurrentChartTheme()
+                }
+            };
+            charts.gender = new ApexCharts(document.querySelector("#genderDistributionChart"), options);
+            charts.gender.render();
+        }
+
         function renderSportByGenderChart(d) { const options = { series: d.series, chart: { type: 'bar', height: 500, stacked: true }, plotOptions: { bar: { horizontal: true } }, stroke: { width: 1, colors: ['#fff'] }, xaxis: { categories: d.categories }, yaxis: { title: { text: undefined } }, tooltip: { y: { formatter: (v) => v + " athletes" } }, fill: { opacity: 1 }, legend: { position: 'top', horizontalAlign: 'left' }, theme: { mode: getCurrentChartTheme() } }; charts.sportGender = new ApexCharts(document.querySelector("#sportByGenderChart"), options); charts.sportGender.render(); }
     </script>
 </body>
