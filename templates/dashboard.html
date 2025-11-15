@@ -84,7 +84,7 @@
         </header>
 
         <div class="kpi-container">
-            <div class="kpi-card"><p class="value" id="totalAchievementsValue">0</p><p class="label">Total Athlets Achievements</p></div>
+            <div class="kpi-card"><p class="value" id="totalAchievementsValue">0</p><p class="label">Total Achievements</p></div>
             <div class="kpi-card"><p class="value" id="totalPointsValue">0</p><p class="label">Total Points</p></div>
             <div class="kpi-card"><p class="value" id="uniqueSportsValue">0</p><p class="label">Unique Sports</p></div>
         </div>
@@ -92,8 +92,8 @@
         <div class="charts-grid">
             <div class="chart-card"><h3 >Top 5 Achievement Types</h3><div id="achievementTypesChart"></div></div>
             <div class="chart-card"><h3 >Gender Distribution of Athletes</h3><div id="genderDistributionChart"></div></div>
-            <div class="chart-card"><h3 >All Sports Participated by Athletes</h3><div id="sportsPieChart"></div></div>
             <div class="chart-card"><h3 >All Achievements</h3><div id="achievementPieChart"></div></div>
+            <div class="chart-card"><h3 >All Sports Participated by Athletes</h3><div id="sportsPieChart"></div></div>
             <div class="chart-card"><h3 >School-wise Achievements</h3><div id="schoolParticipationChart"></div></div>
             <div class="chart-card"><h3 >Top 6 Popular Sports</h3><div id="popularSportsChart"></div></div>
             
@@ -222,18 +222,35 @@
                 charts.popularBar.render();
         }
 
+        // --- UPDATED: Added toolbar ---
         function renderAchievementPieChart(d) {
-                const options = { series: d.series, chart: { type: 'pie', height: 450 }, labels: d.labels, legend: { position: 'bottom' }, theme: { mode: getCurrentChartTheme() } };
+                const options = { 
+                    series: d.series, 
+                    chart: { 
+                        type: 'pie', 
+                        height: 450,
+                        toolbar: { // <-- ADDED THIS
+                            show: true
+                        }
+                    }, 
+                    labels: d.labels, 
+                    legend: { This: 'bottom' }, 
+                    theme: { mode: getCurrentChartTheme() } 
+                };
                 charts.achievementPie = new ApexCharts(document.querySelector("#achievementPieChart"), options);
                 charts.achievementPie.render();
         }
         
+        // --- UPDATED: Added toolbar ---
         function renderSportsPieChart(d) {
             const options = {
                 series: d.series,
                 chart: { 
                     type: 'pie', 
                     height: 450,
+                    toolbar: { // <-- ADDED THIS
+                        show: true
+                    },
                     events: {
                         dataPointSelection: (event, chartContext, config) => {
                             const selectedSport = config.w.globals.labels[config.dataPointIndex];
@@ -262,23 +279,23 @@
         function getCurrentChartTheme() { return document.body.classList.contains('dark-theme') ? 'dark' : 'light'; } function updateAllChartThemes() { const newTheme = { theme: { mode: getCurrentChartTheme() } }; Object.values(charts).forEach(chart => chart?.updateOptions(newTheme)); }
         function renderSchoolChart(d) { const options = { series: [{ name: 'Achievements', data: d.map(i => i.Achievements) }], chart: { type: 'bar', height: 350, events: { dataPointSelection: (e, chart, config) => { const selectedSchool = config.w.globals.labels[config.dataPointIndex]; applyFilter('School', selectedSchool); } } }, plotOptions: { bar: { horizontal: true, barHeight: '60%', distributed: true } }, dataLabels: { enabled: true, textAnchor: 'end', offsetX: -10, style: { colors: ['#fff'] }, formatter: (v) => v }, xaxis: { categories: d.map(i => i.School) }, yaxis: { labels: { show: true, style: { colors: [getCurrentChartTheme() === 'light' ? '#333' : '#eee'] } } }, legend: { show: false }, tooltip: { y: { formatter: (v, { seriesIndex, dataPointIndex, w }) => { const schoolName = w.globals.labels[dataPointIndex]; return `${schoolName}: ${v} Achievements`; }, title: { formatter: () => '' } } }, theme: { mode: getCurrentChartTheme() } }; charts.school = new ApexCharts(document.querySelector("#schoolParticipationChart"), options); charts.school.render(); }
         
-        // --- *** THIS FUNCTION IS NOW UPDATED WITH COLORS *** ---
+        // --- UPDATED: Added colors AND toolbar ---
         function renderGenderChart(d) {
-            // --- UPDATED: Define colors based on your specific request ---
             const colorMap = {
-                'Boys': '#3366FF',  // Assign blue to Boys
-                'Girls': '#00E396' // Assign green to Girls
+                'Boys': '#3366FF',
+                'Girls': '#00E396'
             };
-            // This creates the color array in the correct order
             const orderedColors = d.labels.map(label => colorMap[label] || '#808080');
-            // --- END UPDATED ---
 
             const options = {
                 series: d.series,
-                colors: orderedColors, // <-- Use the new ordered color array
+                colors: orderedColors,
                 chart: {
                     type: 'donut',
                     height: 350,
+                    toolbar: { // <-- ADDED THIS
+                        show: true
+                    },
                     events: {
                         dataPointSelection: (e, chart, config) => {
                             const selectedGender = config.w.globals.labels[config.dataPointIndex];
