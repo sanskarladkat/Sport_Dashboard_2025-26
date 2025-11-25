@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports Budget 2025-26</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <style>
+        :root { --bg-color: #f4f7fc; --card-color: #ffffff; --text-color: #333333; --header-color: #1a237e; --shadow-color: rgba(0, 0, 0, 0.05); }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 40px; }
+        
+        /* Main Container */
+        .container { 
+            max-width: 1200px; /* Made wider for side-by-side charts */
+            margin: auto; 
+            background: var(--card-color); 
+            padding: 40px; 
+            border-radius: 15px; 
+            box-shadow: 0 4px 20px var(--shadow-color); 
+        }
+        
+        h1, h2 { text-align: center; color: var(--header-color); }
+        
+        .chart-section { margin-top: 30px; }
+
+        /* --- NEW CSS FOR SIDE-BY-SIDE LAYOUT --- */
+        .charts-row {
+            display: flex;
+            gap: 20px;
+            margin-top: 40px;
+            flex-wrap: wrap; /* Wraps on mobile */
+        }
+        .chart-col {
+            flex: 1; /* Each chart takes equal width */
+            min-width: 400px; /* Prevents getting too small */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Department of Physical Education & Sports</h1>
+        <h2 style="opacity: 0.7; font-size: 1.2rem; margin-top: -10px;">Budget Utilization 2025-26</h2>
+        
+        <div class="chart-section">
+            <h3 style="text-align: center;">Total Budget Utilization </h3>
+            <div id="totalUtilizationChart"></div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+
+        <div class="charts-row">
+            
+            <div class="chart-col">
+                <h3 style="text-align: center;">Funds Distribution (Category-wise)</h3>
+                <div id="budgetPieChart"></div>
+            </div>
+
+            <div class="chart-col">
+                <h3 style="text-align: center;">Breakdown of Budget Utilization (Category-wise)</h3>
+                <div id="budgetStackChart"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        async function fetchAndRenderBudget() {
+            try {
+                const response = await fetch('/api/budget');
+                const data = await response.json();
+
+                // --- 1. Calculate Totals ---
+                const actualSpendList = data.series.find(s => s.name === 'Actual Spend').data;
+                const unutilizedList = data.series.find(s => s.name === 'Unutilized Amount').data;
+                const totalActual = actualSpendList.reduce((a, b) => a + b, 0);
+                const totalUnutilized = unutilizedList.reduce((a, b) => a + b, 0);
+
+                // --- 2. RENDER TOP CHART (Total Utilization) ---
+                const totalUtilOptions = {
+                    series: [
+                        { name: 'Actual Spend', data: [totalActual] },
+                        { name: 'Unutilized Amount', data: [totalUnutilized] }
+                    ],
+                    chart: {
+                        type: 'bar',
+                        height: 150, 
+                        stacked: true,
+                        stackType: '100%', 
+                        toolbar: { show: false }
+                    },
+                    colors: ['#D32F2F', '#4285F4'], 
+                    plotOptions: { bar: { horizontal: true, barHeight: '50%' } },
+                    xaxis: { categories: ['Total Budget'], labels: {show: false}, axisBorder: {show: false}, axisTicks: {show: false} },
+                    tooltip: { y: { formatter: (val) => "₹ " + val.toLocaleString() } },
+                    legend: { position: 'top' }
+                };
+                new ApexCharts(document.querySelector("#totalUtilizationChart"), totalUtilOptions).render();
+
+
+                // --- 3. RENDER PIE CHART (Left Side) ---
+                const totalPerCategory = data.categories.map((cat, i) => data.series[0].data[i] + data.series[1].data[i]);
+                const pieOptions = {
+                    series: totalPerCategory,
+                    labels: data.categories,
+                    chart: { type: 'pie', height: 400 }, // Adjusted height for side-by-side
+                    legend: { position: 'bottom' },
+                    tooltip: { y: { formatter: (val) => "₹ " + val.toLocaleString() } },
+                    theme: { mode: 'light' }
+                };
+                new ApexCharts(document.querySelector("#budgetPieChart"), pieOptions).render();
+
+
+                // --- 4. RENDER BREAKDOWN CHART (Right Side) ---
+                const stackOptions = {
+                    series: data.series,
+                    chart: { type: 'bar', height: 400, stacked: true, toolbar: { show: false } }, // Adjusted height
+                    colors: ['#FF4560', '#008FFB'],
+                    dataLabels: { enabled: false }, 
+                    plotOptions: {
+                        bar: { horizontal: true, dataLabels: { total: { enabled: true, offsetX: 5, style: { fontSize: '11px', fontWeight: 700, color: '#333' } } } }
+                    },
+                    xaxis: {
+                        categories: data.categories,
+                        labels: { formatter: (val) => val >= 1000000 ? (val / 1000000).toFixed(1) + 'M' : val }
+                    },
+                    tooltip: { y: { formatter: (val) => "₹ " + val.toLocaleString() } },
+                    legend: { position: 'top' }
+                };
+                new ApexCharts(document.querySelector("#budgetStackChart"), stackOptions).render();
+
+            } catch (error) {
+                console.error("Error loading budget:", error);
+                document.querySelector(".container").innerHTML += `<p style='color:red; text-align:center;'>Error loading data: ${error.message}</p>`;
+            }
+        }
+
+        fetchAndRenderBudget();
+    </script>
+</body>
+</html>
