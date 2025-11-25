@@ -86,16 +86,16 @@
         <div class="kpi-container">
             <div class="kpi-card"><p class="value" id="totalAchievementsValue">0</p><p class="label">Total Athlets Achievements</p></div>
             <div class="kpi-card"><p class="value" id="totalPointsValue">0</p><p class="label">Total Points</p></div>
-            <div class="kpi-card"><p class="value" id="uniqueSportsValue">0</p><p class="label">Unique Sports</p></div>
+            <div class="kpi-card"><p class="value" id="uniqueSportsValue">0</p><p class="label">Participated Sports Activity</p></div>
         </div>
         
         <div class="charts-grid">
-            <div class="chart-card"><h3 >Top 5 Achievement Types</h3><div id="achievementTypesChart"></div></div>
+            <div class="chart-card"><h3 >Achievement Level</h3><div id="achievementTypesChart"></div></div>
             <div class="chart-card"><h3 >Gender Distribution of Athletes</h3><div id="genderDistributionChart"></div></div>
             <div class="chart-card"><h3 >All Sports Participated by Athletes</h3><div id="sportsPieChart"></div></div>
             <div class="chart-card"><h3 >All Achievements</h3><div id="achievementPieChart"></div></div>
             <div class="chart-card"><h3 >School-wise Achievements</h3><div id="schoolParticipationChart"></div></div>
-            <div class="chart-card"><h3 >Top 6 Popular Sports</h3><div id="popularSportsChart"></div></div>
+            <div class="chart-card"><h3 >Top 6 Sports</h3><div id="popularSportsChart"></div></div>
             
             <div class="chart-card" style="grid-column: 1 / -1;"><h3 >Gender-wise Participation in Sport</h3><div id="sportByGenderChart"></div></div>
         </div>
@@ -223,22 +223,35 @@
         }
 
         // --- UPDATED: Added toolbar ---
-        function renderAchievementPieChart(d) {
-                const options = { 
-                    series: d.series, 
-                    chart: { 
-                        type: 'pie', 
-                        height: 450,
-                        toolbar: { // <-- ADDED THIS
-                            show: true
-                        }
-                    }, 
-                    labels: d.labels, 
-                    legend: { This: 'bottom' }, 
-                    theme: { mode: getCurrentChartTheme() } 
-                };
-                charts.achievementPie = new ApexCharts(document.querySelector("#achievementPieChart"), options);
-                charts.achievementPie.render();
+      function renderAchievementPieChart(d) {
+            const options = { 
+                series: d.series, 
+                chart: { 
+                    type: 'pie', 
+                    height: 600, // Increased height to make room for the list
+                    toolbar: { show: true }
+                }, 
+                labels: d.labels, 
+                legend: { 
+                    show: true,
+                    position: 'bottom',
+                    horizontalAlign: 'center', 
+                    fontSize: '13px',
+                    fontFamily: 'Poppins',
+                    markers: {
+                        width: 10,
+                        height: 10,
+                        radius: 12, // Makes the colored dots perfectly round
+                    },
+                    itemMargin: {
+                        horizontal: 10, // Adds space between items side-by-side
+                        vertical: 5     // Adds space between rows
+                    }
+                }, 
+                theme: { mode: getCurrentChartTheme() } 
+            };
+            charts.achievementPie = new ApexCharts(document.querySelector("#achievementPieChart"), options);
+            charts.achievementPie.render();
         }
         
         // --- UPDATED: Added toolbar ---
