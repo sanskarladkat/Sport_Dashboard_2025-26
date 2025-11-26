@@ -95,7 +95,7 @@
                         stackType: '100%', 
                         toolbar: { show: false }
                     },
-                    colors: ['#D32F2F', '#4285F4'], 
+                    colors: ['#f70a2c', '#0598fa'], 
                     plotOptions: { bar: { horizontal: true, barHeight: '50%' } },
                     xaxis: { categories: ['Total Budget'], labels: {show: false}, axisBorder: {show: false}, axisTicks: {show: false} },
                     tooltip: { y: { formatter: (val) => "₹ " + val.toLocaleString() } },
@@ -120,21 +120,45 @@
                 // --- 4. RENDER BREAKDOWN CHART (Right Side) ---
                 const stackOptions = {
                     series: data.series,
-                    chart: { type: 'bar', height: 400, stacked: true, toolbar: { show: false } }, // Adjusted height
-                    colors: ['#FF4560', '#008FFB'],
-                    dataLabels: { enabled: false }, 
-                    plotOptions: {
-                        bar: { horizontal: true, dataLabels: { total: { enabled: true, offsetX: 5, style: { fontSize: '11px', fontWeight: 700, color: '#333' } } } }
+                    chart: { 
+                        type: 'bar', 
+                        height: 400, 
+                        stacked: true, 
+                        toolbar: { show: false } 
+                    }, 
+                    colors: ['#f70a2c', '#0598fa'],
+                    
+                    // --- FIX 1: Add space on the right for the long numbers ---
+                    grid: {
+                        padding: {
+                            right: 60, // Adds 60px of space on the right side
+                            left: 10
+                        }
                     },
+
+                    plotOptions: {
+                        bar: { 
+                            horizontal: true, 
+                            barHeight: '85%', // --- FIX 2: Makes bars thicker (was default ~70%)
+                            dataLabels: { 
+                                total: { 
+                                    enabled: true, 
+                                    offsetX: 10, // Pushes text slightly right
+                                    style: { fontSize: '12px', fontWeight: 700, color: '#333' } 
+                                } 
+                            } 
+                        }
+                    },
+                    dataLabels: { enabled: false }, 
                     xaxis: {
                         categories: data.categories,
+                        max: 5000000, // Keeps the scale tight so the 5M bar fills the width
                         labels: { formatter: (val) => val >= 1000000 ? (val / 1000000).toFixed(1) + 'M' : val }
                     },
                     tooltip: { y: { formatter: (val) => "₹ " + val.toLocaleString() } },
                     legend: { position: 'top' }
                 };
                 new ApexCharts(document.querySelector("#budgetStackChart"), stackOptions).render();
-
             } catch (error) {
                 console.error("Error loading budget:", error);
                 document.querySelector(".container").innerHTML += `<p style='color:red; text-align:center;'>Error loading data: ${error.message}</p>`;
