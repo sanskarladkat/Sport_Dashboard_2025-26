@@ -91,6 +91,10 @@ def home():
 def budget_page():
     return render_template('budget.html')
 
+@app.route('/operations')
+def operations_page():
+    return render_template('operations.html')
+
 @app.route('/api/data')
 def get_data():
     try:

@@ -16,10 +16,39 @@
         body.dark-theme { --bg-color: #121212; --card-color: #1e1e1e; --text-color: #e0e0e0; --header-color: #bb86fc; --shadow-color: rgba(255, 255, 255, 0.05); --border-color: #333; }
         body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; transition: background-color 0.3s, color 0.3s; }
         .container { max-width: 1400px; margin: auto; display: flex; flex-direction: column; gap: 20px; }
-        header { background: var(--card-color); padding: 15px 20px; border-radius: 10px; box-shadow: 0 4px 12px var(--shadow-color); text-align: center; display: flex; justify-content: space-between; align-items: center; }
-        header h1 { margin: 0; color: var(--header-color); font-weight: 700; }
+        
+        /* HEADER STYLES */
+        header { 
+            background: var(--card-color); 
+            padding: 15px 20px; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 12px var(--shadow-color); 
+            text-align: center; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        header h1 { margin: 0; color: var(--header-color); font-weight: 700; font-size: 1.5rem; }
         .header-buttons { display: flex; gap: 10px; }
         .theme-switcher, .reset-button { background-color: transparent; border: 1px solid var(--header-color); border-radius: 20px; padding: 8px 12px; cursor: pointer; font-size: 14px; color: var(--header-color); }
+        
+        /* --- MOBILE RESPONSIVE FIX --- */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column; /* Stack vertically */
+                gap: 15px; /* Add space between title and buttons */
+            }
+            header h1 {
+                font-size: 1.2rem; /* Smaller font for mobile */
+                text-align: center;
+            }
+            .header-buttons {
+                width: 100%;
+                justify-content: center; /* Center buttons */
+                flex-wrap: wrap; /* Let buttons wrap to next line if needed */
+            }
+        }
+
         .kpi-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
         .kpi-card { background: var(--card-color); padding: 25px; border-radius: 10px; box-shadow: 0 4px 12px var(--shadow-color); text-align: center; }
         .kpi-card .value { font-size: 2.5em; font-weight: 700; color: var(--header-color); margin: 0; }
@@ -29,6 +58,12 @@
         .chart-card h3 { margin-top: 0; margin-bottom: 20px; text-align: center; color: var(--text-color); font-weight: 600; }
         .apexcharts-yaxis-label { white-space: nowrap !important; }
 
+        @media (max-width: 600px) {
+            .charts-grid { grid-template-columns: 1fr; } /* Force 1 column for charts on mobile */
+            .chart-card { min-width: 0; } /* Allow charts to shrink */
+        }
+
+        /* Modal Styles */
         .modal {
             display: none; 
             position: fixed; 
@@ -45,7 +80,7 @@
             padding: 20px;
             border: 1px solid var(--border-color);
             border-radius: 10px;
-            width: 80%;
+            width: 90%; /* Responsive width */
             max-width: 500px;
         }
         .close-button {
@@ -68,6 +103,7 @@
             <div class="header-buttons">
                 <button id="resetFiltersBtn" class="reset-button" style="display: none;">Reset Filters</button>
                 <button id="budgetBtn" class="theme-switcher">Sports Budget</button>
+                <button id="opsBtn" class="theme-switcher">Facility Report</button>
                 <button id="themeSwitcher" class="theme-switcher">Change Theme</button>
             </div>
         </header>
@@ -122,6 +158,9 @@
         
         const budgetBtn = document.getElementById('budgetBtn');
         budgetBtn.onclick = () => { window.open('/budget', '_blank'); }
+
+        const opsBtn = document.getElementById('opsBtn');
+        opsBtn.onclick = () => { window.open('/operations', '_blank'); }
 
         window.onclick = (event) => { if (event.target == modal) modal.style.display = 'none'; }
 

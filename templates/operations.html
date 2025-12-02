@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Sports Operations Report</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <style>
+        :root { --bg-color: #f4f7fc; --card-color: #ffffff; --text-color: #333333; --header-color: #1a237e; --shadow-color: rgba(0, 0, 0, 0.05); }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 40px; }
+        .container { max-width: 1200px; margin: auto; background: var(--card-color); padding: 40px; border-radius: 15px; box-shadow: 0 4px 20px var(--shadow-color); }
+        h1, h2 { text-align: center; color: var(--header-color); }
+        .chart-section { margin-top: 40px; }
+        .section-header { margin-top: 20px; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px;}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="section-header">
+            <h1>Monthly Sports Operations Report</h1>
+        </div>
+
+        <div class="chart-section">
+            <h3 style="text-align: center;">Facility Capacity Utilization (Used vs Available)</h3>
+            <div id="opsUsageChart"></div>
+        </div>
+
+
+    <script>
+        async function fetchAndRenderOperations() {
+            try {
+                const response = await fetch('/api/operations');
+                const data = await response.json();
+
+                // --- CHART 1: Facility Capacity (Horizontal Stacked) ---
+                const totalCapacities = data.used.map((u, i) => u + data.unused[i]);
+                const maxOpsVal = Math.max(...totalCapacities);
+
+                const usageOptions = {
+                    series: [
+                        { name: 'Remaining', data: data.used },
+                        { name: 'Consumed', data: data.unused }
+                    ],
+                    chart: { 
+                        type: 'bar', 
+                        height: 550, 
+                        stacked: true, 
+                        toolbar: { show: false } 
+                    },
+                    colors: ['#f70a2c', '#0598fa'], // Red (Used) & Blue (Unused)
+                    
+                    grid: {
+                        padding: { right: 80, left: 0 }
+                    },
+
+                    plotOptions: {
+                        bar: { 
+                            horizontal: true, 
+                            barHeight: '55%', 
+                            dataLabels: {
+                                total: {
+                                    enabled: true, 
+                                    offsetX: 10,
+                                    formatter: function (val) { return val.toLocaleString(); },
+                                    style: { fontSize: '12px', fontWeight: 700, color: '#333' }
+                                }
+                            }
+                        }
+                    },
+                    
+                    // --- NEW: SHOW PERCENTAGE INSIDE BARS ---
+                    dataLabels: { 
+                        enabled: true,
+                        style: {
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                            colors: ['#fff'] // White text to stand out on Red/Blue
+                        },
+                        formatter: function (val, opts) {
+                            // Calculate % of Total Capacity for this specific bar segment
+                            const index = opts.dataPointIndex;
+                            const used = data.used[index];
+                            const unused = data.unused[index];
+                            const total = used + unused;
+                            const percent = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+                            
+                            // Only show if the bar is big enough (e.g. > 5%) to fit text
+                            if (percent > 5) {
+                                return percent + "%";
+                            }
+                            return ""; // Hide text for tiny slivers
+                        }
+                    },
+
+                    xaxis: { 
+                        categories: data.facilities,
+                        min: 0,
+                        max: maxOpsVal * 1.15, 
+                        labels: { formatter: (val) => val.toLocaleString() }
+                    },
+                    yaxis: {
+                        labels: {
+                            maxWidth: 180,
+                            style: { fontSize: '12px', fontFamily: 'Poppins' }
+                        }
+                    },
+                    tooltip: { 
+                        y: { 
+                            formatter: function (val, { seriesIndex, dataPointIndex, w }) {
+                                const used = data.used[dataPointIndex];
+                                const unused = data.unused[dataPointIndex];
+                                const total = used + unused;
+                                const percent = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+                                return val.toLocaleString() + " (" + percent + "%)";
+                            }
+                        } 
+                    },
+                    legend: { position: 'top' }
+                };
+                new ApexCharts(document.querySelector("#opsUsageChart"), usageOptions).render();
+
+
+            } catch (error) { console.error("Error loading operations:", error); }
+        }
+
+        fetchAndRenderOperations();
+    </script>
+</body>
+</html>
