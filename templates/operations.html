@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Sports Operations Report</title>
+    <title>Monthly Sports Operations Report</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,13 +24,14 @@
     <div class="container">
         <div class="section-header">
             <h1>Monthly Sports Operations Report</h1>
+            <h2 style="text-align: center;">November 2025</h2>
         </div>
 
         <div class="chart-section">
-            <h3 style="text-align: center;">Facility Capacity Utilization (Used vs Available)</h3>
+            <h3 style="text-align: center;">Facility Capacity Utilization (Consumed vs Remaining)</h3>
             <div id="opsUsageChart"></div>
         </div>
-
+    </div>
 
     <script>
         async function fetchAndRenderOperations() {
@@ -44,8 +45,8 @@
 
                 const usageOptions = {
                     series: [
-                        { name: 'Remaining', data: data.used },
-                        { name: 'Consumed', data: data.unused }
+                        { name: 'Consumed', data: data.used },   // Red Part
+                        { name: 'Remaining', data: data.unused } // Green Part
                     ],
                     chart: { 
                         type: 'bar', 
@@ -53,7 +54,8 @@
                         stacked: true, 
                         toolbar: { show: false } 
                     },
-                    colors: ['#f70a2c', '#0598fa'], // Red (Used) & Blue (Unused)
+                    // --- COLORS UPDATED: RED (Start) -> GREEN (End) ---
+                    colors: ['#fa1b1b', '#07fa79'], 
                     
                     grid: {
                         padding: { right: 80, left: 0 }
@@ -74,27 +76,25 @@
                         }
                     },
                     
-                    // --- NEW: SHOW PERCENTAGE INSIDE BARS ---
+                    // Show Percentage inside the bar
                     dataLabels: { 
                         enabled: true,
                         style: {
                             fontSize: '12px',
                             fontWeight: 'bold',
-                            colors: ['#fff'] // White text to stand out on Red/Blue
+                            colors: ['#fff']
                         },
                         formatter: function (val, opts) {
-                            // Calculate % of Total Capacity for this specific bar segment
                             const index = opts.dataPointIndex;
                             const used = data.used[index];
                             const unused = data.unused[index];
                             const total = used + unused;
                             const percent = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
                             
-                            // Only show if the bar is big enough (e.g. > 5%) to fit text
                             if (percent > 5) {
                                 return percent + "%";
                             }
-                            return ""; // Hide text for tiny slivers
+                            return "";
                         }
                     },
 
@@ -124,7 +124,6 @@
                     legend: { position: 'top' }
                 };
                 new ApexCharts(document.querySelector("#opsUsageChart"), usageOptions).render();
-
 
             } catch (error) { console.error("Error loading operations:", error); }
         }
