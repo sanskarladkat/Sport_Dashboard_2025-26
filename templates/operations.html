@@ -16,15 +16,30 @@
         .container { max-width: 1200px; margin: auto; background: var(--card-color); padding: 40px; border-radius: 15px; box-shadow: 0 4px 20px var(--shadow-color); }
         h1, h2 { text-align: center; color: var(--header-color); }
         .chart-section { margin-top: 40px; }
-        .section-header { margin-top: 20px; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px;}
+        
+        .section-header { 
+            margin-top: 20px; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
+        }
+        .section-header h1 { margin: 0; font-size: 1.8rem; }
+        
+        select#monthSelector {
+            padding: 10px 15px; font-size: 16px; border-radius: 8px; border: 1px solid #ccc;
+            font-family: 'Poppins', sans-serif; cursor: pointer; background-color: #fff;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
         <div class="section-header">
-            <h1>Monthly Sports Operations Report</h1>
-            <h2 style="text-align: center;">November 2025</h2>
+            <h1 id="reportTitle">Monthly Sports Operations Report</h1>
+            <div>
+                <label for="monthSelector" style="font-weight: 600; margin-right: 10px;">Select Month:</label>
+                <select id="monthSelector" onchange="fetchAndRenderOperations(this.value)">
+                    <option value="" disabled selected>Loading...</option>
+                </select>
+            </div>
         </div>
 
         <div class="chart-section">
@@ -34,82 +49,67 @@
     </div>
 
     <script>
-        async function fetchAndRenderOperations() {
+        let charts = {};
+
+        async function loadMonths() {
             try {
-                const response = await fetch('/api/operations');
+                const response = await fetch('/api/operations/months');
+                const months = await response.json();
+                const selector = document.getElementById('monthSelector');
+                selector.innerHTML = ''; 
+
+                if (months.length === 0 || months[0] === "Month Column Missing") {
+                    const opt = document.createElement('option');
+                    opt.text = "No Data Found"; selector.add(opt); return;
+                }
+
+                months.forEach(month => {
+                    const opt = document.createElement('option');
+                    opt.value = month; opt.text = month; selector.add(opt);
+                });
+
+                if (months.length > 0) {
+                    selector.value = months[0];
+                    fetchAndRenderOperations(months[0]);
+                }
+            } catch (e) { console.error("Error loading months:", e); }
+        }
+
+        async function fetchAndRenderOperations(month) {
+            try {
+                document.getElementById('reportTitle').innerText = `Monthly Sports Operations Report - ${month}`;
+                const response = await fetch(`/api/operations?month=${encodeURIComponent(month)}`);
                 const data = await response.json();
 
-                // --- CHART 1: Facility Capacity (Horizontal Stacked) ---
+                // --- CHART 1: Occupied (Red) vs Vacant (Green) ---
                 const totalCapacities = data.used.map((u, i) => u + data.unused[i]);
                 const maxOpsVal = Math.max(...totalCapacities);
 
                 const usageOptions = {
                     series: [
-                        { name: 'Consumed', data: data.used },   // Red Part
-                        { name: 'Remaining', data: data.unused } // Green Part
+                        { name: 'Consumed', data: data.used },
+                        { name: 'Remaining', data: data.unused }
                     ],
-                    chart: { 
-                        type: 'bar', 
-                        height: 550, 
-                        stacked: true, 
-                        toolbar: { show: false } 
-                    },
-                    // --- COLORS UPDATED: RED (Start) -> GREEN (End) ---
-                    colors: ['#fa1b1b', '#07fa79'], 
-                    
-                    grid: {
-                        padding: { right: 80, left: 0 }
-                    },
-
+                    chart: { type: 'bar', height: 550, stacked: true, toolbar: { show: false } },
+                    colors: ['#f50226', '#05fa7f'], // Red & Green
+                    grid: { padding: { right: 80, left: 0 } },
                     plotOptions: {
-                        bar: { 
-                            horizontal: true, 
-                            barHeight: '55%', 
-                            dataLabels: {
-                                total: {
-                                    enabled: true, 
-                                    offsetX: 10,
-                                    formatter: function (val) { return val.toLocaleString(); },
-                                    style: { fontSize: '12px', fontWeight: 700, color: '#333' }
-                                }
-                            }
-                        }
+                        bar: { horizontal: true, barHeight: '55%', dataLabels: { total: { enabled: true, offsetX: 10, style: { fontSize: '12px', fontWeight: 700, color: '#333' } } } }
                     },
-                    
-                    // Show Percentage inside the bar
                     dataLabels: { 
                         enabled: true,
-                        style: {
-                            fontSize: '12px',
-                            fontWeight: 'bold',
-                            colors: ['#fff']
-                        },
+                        style: { fontSize: '12px', fontWeight: 'bold', colors: ['#fff'] },
                         formatter: function (val, opts) {
                             const index = opts.dataPointIndex;
                             const used = data.used[index];
                             const unused = data.unused[index];
                             const total = used + unused;
                             const percent = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
-                            
-                            if (percent > 5) {
-                                return percent + "%";
-                            }
-                            return "";
+                            return percent > 5 ? percent + "%" : "";
                         }
                     },
-
-                    xaxis: { 
-                        categories: data.facilities,
-                        min: 0,
-                        max: maxOpsVal * 1.15, 
-                        labels: { formatter: (val) => val.toLocaleString() }
-                    },
-                    yaxis: {
-                        labels: {
-                            maxWidth: 180,
-                            style: { fontSize: '12px', fontFamily: 'Poppins' }
-                        }
-                    },
+                    xaxis: { categories: data.facilities, min: 0, max: maxOpsVal * 1.15, labels: { formatter: (val) => val.toLocaleString() } },
+                    yaxis: { labels: { maxWidth: 180, style: { fontSize: '12px', fontFamily: 'Poppins' } } },
                     tooltip: { 
                         y: { 
                             formatter: function (val, { seriesIndex, dataPointIndex, w }) {
@@ -123,12 +123,15 @@
                     },
                     legend: { position: 'top' }
                 };
-                new ApexCharts(document.querySelector("#opsUsageChart"), usageOptions).render();
+
+                if (charts.usage) charts.usage.destroy();
+                charts.usage = new ApexCharts(document.querySelector("#opsUsageChart"), usageOptions);
+                charts.usage.render();
 
             } catch (error) { console.error("Error loading operations:", error); }
         }
 
-        fetchAndRenderOperations();
+        loadMonths();
     </script>
 </body>
 </html>

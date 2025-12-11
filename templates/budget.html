@@ -18,7 +18,7 @@
         .chart-section { margin-top: 30px; }
         .section-header { margin-top: 60px; border-top: 2px solid #eee; padding-top: 20px; }
 
-        /* --- UPDATED LAYOUT RATIOS --- */
+        /* --- LAYOUT RATIOS (Pie: 40%, Bar: 60%) --- */
         .charts-row { 
             display: flex; 
             gap: 20px; 
@@ -26,18 +26,8 @@
             flex-wrap: wrap; 
             align-items: flex-start;
         }
-        
-        /* Made this column wider (approx 40% of row) */
-        .col-small { 
-            flex: 2; 
-            min-width: 450px; 
-        }
-        
-        /* Adjusted this column (approx 60% of row) */
-        .col-large { 
-            flex: 3; 
-            min-width: 500px; 
-        }
+        .col-small { flex: 2; min-width: 450px; }
+        .col-large { flex: 3; min-width: 500px; }
     </style>
 </head>
 <body>
@@ -68,7 +58,6 @@
     </div>
 
     <script>
-        // --- 1. BUDGET RENDER FUNCTION ---
         async function fetchAndRenderBudget() {
             try {
                 const response = await fetch('/api/budget');
@@ -83,11 +72,14 @@
                 const rowTotals = actualSpendList.map((val, i) => val + unutilizedList[i]);
                 const maxBudgetVal = Math.max(...rowTotals);
 
-                // Top Chart: Total Utilization
+                // --- 1. TOP CHART (Total Utilization) ---
                 const totalUtilOptions = {
-                    series: [{ name: 'Actual Spend', data: [totalActual] }, { name: 'Unutilized Amount', data: [totalUnutilized] }],
+                    series: [
+                        { name: 'Consumed', data: [totalActual] }, 
+                        { name: 'Remaining', data: [totalUnutilized] }
+                    ],
                     chart: { type: 'bar', height: 150, stacked: true, stackType: '100%', toolbar: { show: false } },
-                    colors: ['#f70a2c', '#0598fa'], 
+                    colors: ['#f70a2c', '#05fc81'], // Red & Green
                     plotOptions: { bar: { horizontal: true, barHeight: '50%' } },
                     xaxis: { categories: ['Total Budget'], labels: {show: false}, axisBorder: {show: false}, axisTicks: {show: false} },
                     tooltip: { y: { formatter: (val) => "₹ " + val.toLocaleString() } },
@@ -95,33 +87,33 @@
                 };
                 new ApexCharts(document.querySelector("#totalUtilizationChart"), totalUtilOptions).render();
 
-                // Left Chart: Pie (INCREASED SIZE)
+                // --- 2. PIE CHART ---
                 const totalPerCategory = data.categories.map((cat, i) => data.series[0].data[i] + data.series[1].data[i]);
                 const pieOptions = {
                     series: totalPerCategory, labels: data.categories,
-                    // FIX: Increased Height to 450px
                     chart: { type: 'pie', height: 450 }, 
                     legend: { position: 'bottom' },
                     tooltip: { y: { formatter: (val) => "₹ " + val.toLocaleString() } }, theme: { mode: 'light' }
                 };
                 new ApexCharts(document.querySelector("#budgetPieChart"), pieOptions).render();
 
-                // Right Chart: Breakdown of Budget (Maintained Length)
+                // --- 3. BREAKDOWN CHART (Renamed & Recolored) ---
                 const stackOptions = {
-                    series: data.series,
+                    // Map the API data to new names: Actual Spend -> Consumed, Unutilized -> Remaining
+                    series: [
+                        { name: 'Consumed', data: actualSpendList },
+                        { name: 'Remaining', data: unutilizedList }
+                    ],
                     chart: { 
                         type: 'bar', 
                         height: 600, 
                         stacked: true, 
                         toolbar: { show: false } 
                     }, 
-                    colors: ['#f70a2c', '#0598fa'],
+                    colors: ['#f70a2c', '#05fc81'], // Red & Green
                     
                     grid: {
-                        padding: {
-                            right: 80, 
-                            left: 0 
-                        }
+                        padding: { right: 80, left: 0 }
                     },
 
                     plotOptions: { 
@@ -151,7 +143,6 @@
         }
 
         fetchAndRenderBudget();
-        fetchAndRenderOperations();
     </script>
 </body>
 </html>
