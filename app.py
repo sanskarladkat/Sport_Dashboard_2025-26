@@ -19,17 +19,47 @@ def get_gspread_client():
         creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
     return gspread.authorize(creds)
 
-# --- SHEET HELPERS ---
-def get_sheet_dataframe():
+# --- HELPER: GENERIC SHEET FETCHER ---
+def get_dataframe_by_sheet_name(sheet_name_or_index):
+    """Fetches data from a specific sheet tab (Name or Index)."""
     client = get_gspread_client()
     sheet_url = 'https://docs.google.com/spreadsheets/d/1YiXrlu6qxtorsoDThvB62HTVSuWE9BhQ9J-pbFH6dGc/edit?gid=0#gid=0'
-    spreadsheet = client.open_by_url(sheet_url)
-    sheet = spreadsheet.sheet1
-    raw = sheet.get_all_values()
-    if not raw: return pd.DataFrame()
-    df = pd.DataFrame(raw[1:], columns=raw[0])
-    df = df.loc[:, df.columns != '']
+    try:
+        spreadsheet = client.open_by_url(sheet_url)
+        if isinstance(sheet_name_or_index, int):
+            sheet = spreadsheet.get_worksheet(sheet_name_or_index)
+        else:
+            sheet = spreadsheet.worksheet(sheet_name_or_index)
+        
+        raw = sheet.get_all_values()
+        if not raw: return pd.DataFrame()
+        return pd.DataFrame(raw[1:], columns=raw[0])
+    except Exception as e:
+        print(f"Error fetching sheet '{sheet_name_or_index}': {e}")
+        return pd.DataFrame()
+
+# --- HELPER: COLUMN NORMALIZER ---
+def normalize_columns(df):
+    """Standardizes column names for the Staff Summit logic."""
+    df.columns = df.columns.str.strip()
+    new_cols = {}
+    for col in df.columns:
+        c_lower = col.lower()
+        if 'name' in c_lower and 'student' in c_lower: new_cols[col] = 'Name'
+        elif 'name' in c_lower: new_cols[col] = 'Name'
+        elif 'department' in c_lower or 'school' in c_lower or 'dept' in c_lower: new_cols[col] = 'Department'
+        elif 'gender' in c_lower or 'sex' in c_lower: new_cols[col] = 'Gender'
+        elif 'sport' in c_lower or 'game' in c_lower: new_cols[col] = 'Sport'
+        elif 'point' in c_lower: new_cols[col] = 'Points'
+        elif 'sr' in c_lower and 'no' in c_lower: new_cols[col] = 'SR. NO'
+        elif 'event' in c_lower or 'category' in c_lower: new_cols[col] = 'Event'
+        
+    df = df.rename(columns=new_cols)
     return df
+
+# --- EXISTING HELPERS (Unchanged) ---
+def get_sheet_dataframe():
+    return get_dataframe_by_sheet_name(0)
 
 def get_budget_dataframe():
     client = get_gspread_client()
@@ -39,8 +69,7 @@ def get_budget_dataframe():
         sheet = spreadsheet.sheet1 
         raw = sheet.get_all_values()
         if not raw: return pd.DataFrame()
-        df = pd.DataFrame(raw[1:], columns=raw[0])
-        return df
+        return pd.DataFrame(raw[1:], columns=raw[0])
     except: return pd.DataFrame()
 
 def get_operations_dataframe():
@@ -51,8 +80,7 @@ def get_operations_dataframe():
         sheet = spreadsheet.worksheet('Sheet2')
         raw = sheet.get_all_values()
         if not raw: return pd.DataFrame()
-        df = pd.DataFrame(raw[1:], columns=raw[0])
-        return df
+        return pd.DataFrame(raw[1:], columns=raw[0])
     except Exception as e:
         print(f"Error accessing Sheet2: {e}")
         return pd.DataFrame()
@@ -67,7 +95,11 @@ def budget_page(): return render_template('budget.html')
 @app.route('/operations')
 def operations_page(): return render_template('operations.html')
 
-# --- DATA APIs ---
+@app.route('/staff-summit')
+def staff_summit_page(): return render_template('staff.html')
+
+
+# --- MAIN DASHBOARD API (Unchanged) ---
 @app.route('/api/data')
 def get_data():
     try:
@@ -89,7 +121,6 @@ def get_data():
             'uniqueSports': df['Sport'].nunique() if 'Sport' in df.columns else 0
         }
 
-        # Charts Data
         school_data = []
         if 'School' in df.columns:
             s_c = df['School'].value_counts().reset_index()
@@ -160,20 +191,17 @@ def get_budget_data():
         })
     except Exception as e: return jsonify({"error": str(e)}), 500
 
-# --- OPERATIONS: GET MONTHS ---
 @app.route('/api/operations/months')
 def get_operations_months():
     try:
         df = get_operations_dataframe()
         if df.empty: return jsonify([])
         df.columns = df.columns.str.strip()
-        
         if 'Month' not in df.columns: return jsonify(["Month Column Missing"])
         months = df['Month'].dropna().unique().tolist()
         return jsonify(months)
     except: return jsonify([])
 
-# --- OPERATIONS: GET DATA (Filtered) ---
 @app.route('/api/operations')
 def get_operations_data():
     try:
@@ -181,12 +209,10 @@ def get_operations_data():
         if df.empty: return jsonify({'facilities': [], 'used': [], 'unused': []})
         df.columns = df.columns.str.strip()
         
-        # Filter by Month
         selected_month = request.args.get('month')
         if selected_month and 'Month' in df.columns:
             df = df[df['Month'] == selected_month]
         
-        # Clean Data
         required = ['Games', 'utilized', 'Capacity_month']
         if not all(col in df.columns for col in required): return jsonify({"error": "Missing Columns in Sheet2"}), 500
         
@@ -205,6 +231,106 @@ def get_operations_data():
             'training_student': df['Training Session by Student'].tolist() if 'Training Session by Student' in df.columns else []
         })
     except Exception as e: return jsonify({"error": str(e)}), 500
+
+# --- STAFF SUMMIT API (UPDATED with DEPT POINTS) ---
+@app.route('/api/staff_data')
+def get_staff_data():
+    try:
+        df = get_dataframe_by_sheet_name('Staff Summit')
+
+        if df.empty: return jsonify({"error": "No data in Staff Summit sheet"}), 500
+        
+        df = normalize_columns(df)
+        if 'Sport' in df.columns: df['Sport'] = df['Sport'].str.strip().str.title()
+        if 'Gender' in df.columns: df['Gender'] = df['Gender'].astype(str).str.strip().str.title()
+
+        kpi = {
+            'totalAchievements': len(df),
+            'totalPoints': int(pd.to_numeric(df['Points'], errors='coerce').sum()) if 'Points' in df.columns else 0
+        }
+
+        # Gender Donut
+        id_col = 'SR. NO' if 'SR. NO' in df.columns else 'Name'
+        unique_p = df.drop_duplicates(subset=[id_col])
+        g_counts = unique_p['Gender'].value_counts().reset_index()
+        gender_data = {
+            'labels': g_counts['Gender'].tolist(),
+            'series': g_counts['count'].astype(int).tolist()
+        }
+
+        # 1. Department Bar (Achievements Count - Top 10)
+        dept_data = {'categories': [], 'series': []}
+        if 'Department' in df.columns:
+            d_counts = df['Department'].value_counts().reset_index()
+            d_counts = d_counts.head(10)
+            dept_data = {
+                'categories': d_counts['Department'].tolist(),
+                'series': d_counts['count'].tolist()
+            }
+
+        # 2. Department Bar (Total Points - Top 10) - NEW!
+        dept_points_data = {'categories': [], 'series': []}
+        if 'Department' in df.columns and 'Points' in df.columns:
+            df['Points'] = pd.to_numeric(df['Points'], errors='coerce').fillna(0)
+            d_points = df.groupby('Department')['Points'].sum().reset_index()
+            d_points = d_points.sort_values(by='Points', ascending=False).head(10)
+            
+            dept_points_data = {
+                'categories': d_points['Department'].tolist(),
+                'series': d_points['Points'].tolist()
+            }
+
+        # Sports Pie
+        sports_data = {'labels': [], 'series': []}
+        if 'Sport' in df.columns:
+            s_counts = df['Sport'].value_counts().reset_index()
+            sports_data = {
+                'labels': s_counts['Sport'].tolist(),
+                'series': s_counts['count'].tolist()
+            }
+
+        return jsonify({
+            'kpi': kpi, 
+            'gender': gender_data, 
+            'department': dept_data, 
+            'department_points': dept_points_data, # New Data
+            'sports': sports_data
+        })
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+# --- DRILLDOWN API (10 OR 5 POINTS + EVENT + GENDER) ---
+@app.route('/api/winners_by_sport')
+def get_winners():
+    try:
+        sport = request.args.get('sport')
+        df = get_dataframe_by_sheet_name('Staff Summit')
+        
+        if df.empty: return jsonify([])
+
+        df = normalize_columns(df)
+        if 'Sport' in df.columns: df['Sport'] = df['Sport'].str.strip().str.title()
+        
+        # 1. Filter by Sport
+        filtered = df[df['Sport'] == sport]
+
+        # 2. Filter by Points (10 OR 5)
+        if 'Points' in filtered.columns:
+            filtered = filtered[pd.to_numeric(filtered['Points'], errors='coerce').isin([10, 5])]
+            filtered = filtered.sort_values(by='Points', ascending=False)
+
+        # 3. Select columns
+        cols_to_keep = ['Name', 'Department', 'Points']
+        if 'Event' in filtered.columns: cols_to_keep.append('Event')
+        if 'Gender' in filtered.columns: cols_to_keep.append('Gender')
+        
+        final_cols = [c for c in cols_to_keep if c in filtered.columns]
+
+        return jsonify(filtered[final_cols].to_dict(orient='records'))
+
+    except Exception as e: 
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

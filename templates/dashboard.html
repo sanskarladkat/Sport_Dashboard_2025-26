@@ -104,6 +104,7 @@
                 <button id="resetFiltersBtn" class="reset-button" style="display: none;">Reset Filters</button>
                 <button id="budgetBtn" class="theme-switcher">Sports Budget</button>
                 <button id="opsBtn" class="theme-switcher">Facility Report</button>
+                <button id="staffBtn" class="theme-switcher">Staff Summit</button>
                 <button id="themeSwitcher" class="theme-switcher">Change Theme</button>
             </div>
         </header>
@@ -156,11 +157,15 @@
 
         closeModalBtn.onclick = () => { modal.style.display = 'none'; }
         
+        // --- BUTTON LOGIC ---
         const budgetBtn = document.getElementById('budgetBtn');
         budgetBtn.onclick = () => { window.open('/budget', '_blank'); }
 
         const opsBtn = document.getElementById('opsBtn');
         opsBtn.onclick = () => { window.open('/operations', '_blank'); }
+
+        const staffBtn = document.getElementById('staffBtn');
+        staffBtn.onclick = () => { window.open('/staff-summit', '_blank'); }
 
         window.onclick = (event) => { if (event.target == modal) modal.style.display = 'none'; }
 
