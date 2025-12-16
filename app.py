@@ -87,8 +87,11 @@ def get_operations_dataframe():
 
 # --- ROUTES ---
 @app.route('/')
-def home(): return render_template('dashboard.html')
-
+def index():
+    return render_template('index.html')
+@app.route('/achievements')
+def achievements_page():
+    return render_template('dashboard.html')
 @app.route('/budget')
 def budget_page(): return render_template('budget.html')
 

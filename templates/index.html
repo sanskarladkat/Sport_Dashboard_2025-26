@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIT-WPU Sports Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --header-h: 15vh; 
+            --image-h: 55vh; 
+            
+            /* --- ALWAYS LIGHT THEME --- */
+            --primary: #1a237e; /* Deep Blue */
+            --accent: #ff4560;  /* Red Accent */
+            --bg-color: #f4f7fc; /* Light Gray Background */
+            --card-bg: #ffffff;  /* White Cards */
+            --text-color: #333333; /* Dark Gray Text */
+            --shadow-color: rgba(0,0,0,0.1); /* Soft Shadow */
+            --border-color: #e0e0e0;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- HEADER --- */
+        header {
+            height: var(--header-h);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0 20px;
+            text-align: center;
+            background: var(--card-bg);
+            border-bottom: 4px solid var(--primary);
+            box-shadow: 0 4px 10px var(--shadow-color);
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* --- BANNER (80% WIDTH & CENTERED) --- */
+        .banner-wrapper {
+            width: 100%;
+            height: var(--image-h);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .banner-container {
+            width: 80%;
+            height: 100%;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px var(--shadow-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .banner-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            transition: transform 8s ease;
+        }
+        
+        .banner-container:hover .banner-image {
+            transform: scale(1.05);
+        }
+
+        /* --- NAVIGATION --- */
+        .nav-section {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 30px 20px;
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Wider columns */
+            gap: 30px;
+            width: 85%;
+            max-width: 1400px;
+        }
+
+        .nav-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-decoration: none;
+            color: var(--primary);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 15px var(--shadow-color);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* SVG Icon Styles */
+        .nav-icon svg {
+            width: 60px;
+            height: 60px;
+            fill: var(--primary);
+            margin-bottom: 15px;
+            transition: fill 0.3s ease, transform 0.3s ease;
+        }
+
+        /* Hover Effects */
+        .nav-card:hover {
+            transform: translateY(-8px);
+            background: var(--primary); 
+            color: #ffffff; 
+            box-shadow: 0 15px 30px rgba(26, 35, 126, 0.3);
+            border-color: var(--primary);
+        }
+
+        .nav-card:hover .nav-icon svg {
+            fill: #ffffff; /* Icon turns white on hover */
+            transform: scale(1.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            header h1 { font-size: 1.6rem; }
+            .banner-container { width: 95%; }
+            .nav-card { padding: 30px 15px; }
+            .nav-title { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>MIT-WPU Physical Education & Sports Dashboard</h1>
+    </header>
+
+    <div class="banner-wrapper">
+        <div class="banner-container">
+            <img src="{{ url_for('static', filename='banner.jpg') }}" alt="MIT WPU Campus" class="banner-image">
+        </div>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-grid">
+            <a href="/achievements" class="nav-card">
+                <div class="nav-icon">
+                    <svg viewBox="0 0 24 24"><path d="M20.2 2H3.8C2.8 2 2 2.8 2 3.8V6c0 3.1 2.3 5.7 5.3 6.1 1.2 2.3 3.5 4 6.2 4.3v2.6H8v2h8v-2h-5.5v-2.6c2.7-.3 5-2 6.2-4.3 3-.4 5.3-3 5.3-6.1V3.8c0-1-.8-1.8-1.8-1.8zM4 6V4h3v2c0 2-1.3 3.7-3 4.3V6zm13 4.3c-1.7-.6-3-2.3-3-4.3V4h3v2z"/></svg>
+                </div>
+                <div class="nav-title">Sports Achievement</div>
+            </a>
+
+            <a href="/budget" class="nav-card">
+                <div class="nav-icon">
+                    <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+                </div>
+                <div class="nav-title">Sports Budget</div>
+            </a>
+
+            <a href="/operations" class="nav-card">
+                <div class="nav-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg>
+                </div>
+                <div class="nav-title">Facility Report</div>
+            </a>
+
+            <a href="/staff-summit" class="nav-card">
+                <div class="nav-icon">
+                    <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                </div>
+                <div class="nav-title">Staff Summit</div>
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>
