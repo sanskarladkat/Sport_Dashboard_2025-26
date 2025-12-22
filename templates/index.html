@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MIT-WPU Sports Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+    
+    <link rel="prefetch" href="/achievements">
+    <link rel="prefetch" href="/budget">
+    <link rel="prefetch" href="/operations">
+    <link rel="prefetch" href="/staff-summit">
     <style>
         :root {
             --header-h: 15vh; 
@@ -16,7 +21,7 @@
             --bg-color: #f4f7fc; /* Light Gray Background */
             --card-bg: #ffffff;  /* White Cards */
             --text-color: #333333; /* Dark Gray Text */
-            --shadow-color: rgba(0,0,0,0.1); /* Soft Shadow */
+            --shadow-color: rgba(0,0,0,0.1); 
             --border-color: #e0e0e0;
         }
 
@@ -55,7 +60,7 @@
             letter-spacing: 1px;
         }
 
-        /* --- BANNER (80% WIDTH & CENTERED) --- */
+        /* --- BANNER --- */
         .banner-wrapper {
             width: 100%;
             height: var(--image-h);
@@ -97,7 +102,7 @@
 
         .nav-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Wider columns */
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 30px;
             width: 85%;
             max-width: 1400px;
@@ -119,6 +124,7 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            cursor: pointer; /* Added cursor pointer */
         }
 
         .nav-title {
@@ -129,7 +135,6 @@
             text-transform: uppercase;
         }
 
-        /* SVG Icon Styles */
         .nav-icon svg {
             width: 60px;
             height: 60px;
@@ -138,7 +143,6 @@
             transition: fill 0.3s ease, transform 0.3s ease;
         }
 
-        /* Hover Effects */
         .nav-card:hover {
             transform: translateY(-8px);
             background: var(--primary); 
@@ -148,8 +152,86 @@
         }
 
         .nav-card:hover .nav-icon svg {
-            fill: #ffffff; /* Icon turns white on hover */
+            fill: #ffffff;
             transform: scale(1.1);
+        }
+
+        /* --- AUTH MODAL STYLES --- */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.6); /* Dark overlay */
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 15% auto; 
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            position: relative;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            color: #aaa;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-btn:hover { color: #000; }
+
+        .modal h2 { margin-top: 0; color: var(--primary); }
+        
+        .auth-input {
+            width: 100%;
+            padding: 12px;
+            margin: 20px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            font-family: 'Poppins', sans-serif;
+        }
+        .auth-input:focus { border-color: var(--primary); }
+
+        .auth-submit {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+            width: 100%;
+        }
+        .auth-submit:hover { background-color: #303f9f; }
+        
+        .error-msg {
+            color: var(--accent);
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
         }
 
         /* Responsive */
@@ -182,12 +264,12 @@
                 <div class="nav-title">Sports Achievement</div>
             </a>
 
-            <a href="/budget" class="nav-card">
+            <div class="nav-card" onclick="openAuthModal()">
                 <div class="nav-icon">
                     <svg viewBox="0 0 24 24"><path d="M13.66 7C13.1 5.82 11.9 5 10.5 5L6 5V3h12v2l-3.26.03c.41.53.69 1.15.8 1.83l2.46-.03v2h-2.18c-.3 2.05-1.92 3.68-3.98 3.96V14h3l4 7H13l-3.3-5.8c-.2.05-.4.07-.6.07-1.7 0-3.1-1.2-3.5-2.8H17v-2H6v-2h7.66z"/></svg>
                 </div>
                 <div class="nav-title">Sports Budget</div>
-            </a>
+            </div>
 
             <a href="/operations" class="nav-card">
                 <div class="nav-icon">
@@ -204,6 +286,60 @@
             </a>
         </div>
     </div>
+
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeAuthModal()">&times;</span>
+            <h2>Restricted Access</h2>
+            <p>Please enter the access code to view the Sports Budget.</p>
+            <input type="text" id="authInput" class="auth-input" placeholder="Enter Access Code" onkeypress="handleEnter(event)">
+            <button class="auth-submit" onclick="checkPassword()">View Dashboard</button>
+            <p id="errorMsg" class="error-msg">Incorrect access code. Please try again.</p>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById("authModal");
+        const input = document.getElementById("authInput");
+        const errorMsg = document.getElementById("errorMsg");
+
+        // --- CONFIGURATION ---
+        const ACCESS_CODE = "budget"; // CHANGE THIS PASSWORD HERE
+
+        function openAuthModal() {
+            modal.style.display = "block";
+            input.value = "";
+            errorMsg.style.display = "none";
+            input.focus();
+        }
+
+        function closeAuthModal() {
+            modal.style.display = "none";
+        }
+
+        function checkPassword() {
+            if (input.value === ACCESS_CODE) {
+                // Redirect if correct
+                window.location.href = "/budget";
+            } else {
+                // Show error if wrong
+                errorMsg.style.display = "block";
+                input.style.borderColor = "var(--accent)";
+                // Shake effect logic could go here
+            }
+        }
+
+        function handleEnter(e) {
+            if (e.key === "Enter") checkPassword();
+        }
+
+        // Close modal if clicking outside box
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeAuthModal();
+            }
+        }
+    </script>
 
 </body>
 </html>

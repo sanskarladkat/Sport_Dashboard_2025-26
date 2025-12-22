@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, render_template, request
+from flask_caching import Cache  # --- NEW IMPORT ---
 import pandas as pd
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
@@ -7,6 +8,10 @@ import os
 import json
 
 app = Flask(__name__)
+
+# --- CACHE CONFIGURATION ---
+# Stores data in memory for 5 minutes (300 seconds) to speed up loading
+cache = Cache(app, config={'CACHE_TYPE': 'SimpleCache', 'CACHE_DEFAULT_TIMEOUT': 100})
 
 # --- AUTHENTICATION ---
 def get_gspread_client():
@@ -21,7 +26,6 @@ def get_gspread_client():
 
 # --- HELPER: GENERIC SHEET FETCHER ---
 def get_dataframe_by_sheet_name(sheet_name_or_index):
-    """Fetches data from a specific sheet tab (Name or Index)."""
     client = get_gspread_client()
     sheet_url = 'https://docs.google.com/spreadsheets/d/1YiXrlu6qxtorsoDThvB62HTVSuWE9BhQ9J-pbFH6dGc/edit?gid=0#gid=0'
     try:
@@ -35,12 +39,11 @@ def get_dataframe_by_sheet_name(sheet_name_or_index):
         if not raw: return pd.DataFrame()
         return pd.DataFrame(raw[1:], columns=raw[0])
     except Exception as e:
-        print(f"Error fetching sheet '{sheet_name_or_index}': {e}")
+        print(f"!!! Error fetching sheet '{sheet_name_or_index}': {e}")
         return pd.DataFrame()
 
 # --- HELPER: COLUMN NORMALIZER ---
 def normalize_columns(df):
-    """Standardizes column names for the Staff Summit logic."""
     df.columns = df.columns.str.strip()
     new_cols = {}
     for col in df.columns:
@@ -57,7 +60,7 @@ def normalize_columns(df):
     df = df.rename(columns=new_cols)
     return df
 
-# --- EXISTING HELPERS (Unchanged) ---
+# --- EXISTING HELPERS ---
 def get_sheet_dataframe():
     return get_dataframe_by_sheet_name(0)
 
@@ -87,11 +90,11 @@ def get_operations_dataframe():
 
 # --- ROUTES ---
 @app.route('/')
-def index():
-    return render_template('index.html')
+def index(): return render_template('index.html')
+
 @app.route('/achievements')
-def achievements_page():
-    return render_template('dashboard.html')
+def achievements_page(): return render_template('dashboard.html')
+
 @app.route('/budget')
 def budget_page(): return render_template('budget.html')
 
@@ -102,8 +105,9 @@ def operations_page(): return render_template('operations.html')
 def staff_summit_page(): return render_template('staff.html')
 
 
-# --- MAIN DASHBOARD API (Unchanged) ---
+# --- MAIN DASHBOARD API (Cached) ---
 @app.route('/api/data')
+@cache.cached(timeout=300, query_string=True) # <--- CACHED FOR 5 MINS
 def get_data():
     try:
         df = get_sheet_dataframe()
@@ -169,6 +173,7 @@ def get_data():
     except Exception as e: return jsonify({"error": str(e)}), 500
 
 @app.route('/api/students_by_sport')
+@cache.cached(timeout=300, query_string=True)
 def get_students_by_sport():
     try:
         sport = request.args.get('sport')
@@ -179,6 +184,7 @@ def get_students_by_sport():
     except Exception as e: return jsonify({"error": str(e)}), 500
 
 @app.route('/api/budget')
+@cache.cached(timeout=300)
 def get_budget_data():
     try:
         df = get_budget_dataframe()
@@ -195,6 +201,7 @@ def get_budget_data():
     except Exception as e: return jsonify({"error": str(e)}), 500
 
 @app.route('/api/operations/months')
+@cache.cached(timeout=300)
 def get_operations_months():
     try:
         df = get_operations_dataframe()
@@ -206,6 +213,7 @@ def get_operations_months():
     except: return jsonify([])
 
 @app.route('/api/operations')
+@cache.cached(timeout=300, query_string=True)
 def get_operations_data():
     try:
         df = get_operations_dataframe()
@@ -235,8 +243,9 @@ def get_operations_data():
         })
     except Exception as e: return jsonify({"error": str(e)}), 500
 
-# --- STAFF SUMMIT API (UPDATED with DEPT POINTS) ---
+# --- STAFF SUMMIT API (CACHED) ---
 @app.route('/api/staff_data')
+@cache.cached(timeout=300)
 def get_staff_data():
     try:
         df = get_dataframe_by_sheet_name('Staff Summit')
@@ -271,7 +280,7 @@ def get_staff_data():
                 'series': d_counts['count'].tolist()
             }
 
-        # 2. Department Bar (Total Points - Top 10) - NEW!
+        # 2. Department Bar (Total Points - Top 10)
         dept_points_data = {'categories': [], 'series': []}
         if 'Department' in df.columns and 'Points' in df.columns:
             df['Points'] = pd.to_numeric(df['Points'], errors='coerce').fillna(0)
@@ -296,15 +305,15 @@ def get_staff_data():
             'kpi': kpi, 
             'gender': gender_data, 
             'department': dept_data, 
-            'department_points': dept_points_data, # New Data
+            'department_points': dept_points_data,
             'sports': sports_data
         })
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
-# --- DRILLDOWN API (10 OR 5 POINTS + EVENT + GENDER) ---
 @app.route('/api/winners_by_sport')
+@cache.cached(timeout=300, query_string=True)
 def get_winners():
     try:
         sport = request.args.get('sport')
