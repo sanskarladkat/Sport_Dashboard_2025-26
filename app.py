@@ -1,16 +1,21 @@
-from flask import Flask, jsonify, render_template, request
-from flask_caching import Cache  # --- NEW IMPORT ---
+from flask import Flask, jsonify, render_template, request, send_file
+from flask_caching import Cache
 import pandas as pd
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import traceback
 import os
 import json
+import io
+
+# --- IMPORTS FOR MATPLOTLIB ---
+import matplotlib
+matplotlib.use('Agg') 
+import matplotlib.pyplot as plt
 
 app = Flask(__name__)
 
 # --- CACHE CONFIGURATION ---
-# Stores data in memory for 5 minutes (300 seconds) to speed up loading
 cache = Cache(app, config={'CACHE_TYPE': 'SimpleCache', 'CACHE_DEFAULT_TIMEOUT': 100})
 
 # --- AUTHENTICATION ---
@@ -107,7 +112,7 @@ def staff_summit_page(): return render_template('staff.html')
 
 # --- MAIN DASHBOARD API (Cached) ---
 @app.route('/api/data')
-@cache.cached(timeout=300, query_string=True) # <--- CACHED FOR 5 MINS
+@cache.cached(timeout=300, query_string=True) 
 def get_data():
     try:
         df = get_sheet_dataframe()
@@ -343,6 +348,90 @@ def get_winners():
 
     except Exception as e: 
         return jsonify({"error": str(e)}), 500
+
+# --- EXPORT GRAPH AS IMAGE (POINTS) ---
+@app.route('/api/export/department_points_image')
+def export_dept_points_image():
+    try:
+        df = get_dataframe_by_sheet_name('Staff Summit')
+        if df.empty: return "No Data Found", 404
+
+        df = normalize_columns(df)
+        if 'Department' not in df.columns or 'Points' not in df.columns:
+            return "Required columns missing", 400
+
+        # Data Prep
+        df['Points'] = pd.to_numeric(df['Points'], errors='coerce').fillna(0)
+        report = df.groupby('Department')['Points'].sum().reset_index()
+        report = report.sort_values(by='Points', ascending=True)
+
+        height = max(10, len(report) * 0.4)
+        
+        fig, ax = plt.subplots(figsize=(14, height))
+        bars = ax.barh(report['Department'], report['Points'], color='#00E396', height=0.6)
+        
+        ax.set_title('Staff Summit: Total Points by Department (Full List)', fontsize=18, color='#333', pad=20)
+        ax.set_xlabel('Total Points', fontsize=14)
+        ax.tick_params(axis='y', labelsize=11)
+        
+        for bar in bars:
+            width = bar.get_width()
+            ax.text(width + 0.5, bar.get_y() + bar.get_height()/2, 
+                    f'{int(width)}', va='center', fontsize=10, color='black', fontweight='bold')
+
+        plt.tight_layout()
+        img_io = io.BytesIO()
+        plt.savefig(img_io, format='png', dpi=100)
+        img_io.seek(0)
+        plt.close(fig)
+
+        return send_file(img_io, mimetype='image/png', as_attachment=True, download_name='Full_Department_Points.png')
+
+    except Exception as e:
+        print(e)
+        return f"Error creating image: {str(e)}", 500
+
+# --- NEW: EXPORT GRAPH AS IMAGE (PARTICIPANTS) ---
+@app.route('/api/export/department_participants_image')
+def export_dept_participants_image():
+    try:
+        df = get_dataframe_by_sheet_name('Staff Summit')
+        if df.empty: return "No Data Found", 404
+
+        df = normalize_columns(df)
+        if 'Department' not in df.columns:
+            return "Required columns missing", 400
+
+        # Data Prep (Count rows)
+        report = df['Department'].value_counts().reset_index()
+        report.columns = ['Department', 'Count']
+        report = report.sort_values(by='Count', ascending=True)
+
+        height = max(10, len(report) * 0.4)
+        
+        fig, ax = plt.subplots(figsize=(14, height))
+        bars = ax.barh(report['Department'], report['Count'], color='#008FFB', height=0.6)
+        
+        ax.set_title('Staff Summit: Participants by Department (Full List)', fontsize=18, color='#333', pad=20)
+        ax.set_xlabel('Participants', fontsize=14)
+        ax.tick_params(axis='y', labelsize=11)
+        
+        for bar in bars:
+            width = bar.get_width()
+            ax.text(width + 0.1, bar.get_y() + bar.get_height()/2, 
+                    f'{int(width)}', va='center', fontsize=10, color='black', fontweight='bold')
+
+        plt.tight_layout()
+        img_io = io.BytesIO()
+        plt.savefig(img_io, format='png', dpi=100)
+        img_io.seek(0)
+        plt.close(fig)
+
+        return send_file(img_io, mimetype='image/png', as_attachment=True, download_name='Full_Department_Participants.png')
+
+    except Exception as e:
+        print(e)
+        return f"Error creating image: {str(e)}", 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
