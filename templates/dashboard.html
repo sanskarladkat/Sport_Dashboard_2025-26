@@ -17,7 +17,6 @@
         body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; transition: background-color 0.3s, color 0.3s; }
         .container { max-width: 1400px; margin: auto; display: flex; flex-direction: column; gap: 20px; }
         
-        /* HEADER STYLES */
         header { 
             background: var(--card-color); 
             padding: 15px 20px; 
@@ -32,33 +31,33 @@
         .header-buttons { display: flex; gap: 10px; }
         .reset-button { background-color: transparent; border: 1px solid var(--header-color); border-radius: 20px; padding: 8px 12px; cursor: pointer; font-size: 14px; color: var(--header-color); }
         
-        /* Back Button Style */
+        /* Back button*/
         .back-btn {
             background-color: var(--header-color);
-            color: white; /* meaningful color for better visibility */
+            color: white; 
             text-decoration: none;
             padding: 8px 16px;
-            border-radius: 5px; /* Rounded corners */
+            border-radius: 5px; 
             font-size: 14px;
             transition: background 0.3s;
-            margin-right: 10px; /* Add some spacing */
+            margin-right: 10px;
         }
-        .back-btn:hover { background-color: #303f9f; } /* Darker shade on hover */
+        .back-btn:hover { background-color: #303f9f; } 
 
-        /* --- MOBILE RESPONSIVE FIX --- */
+        
         @media (max-width: 768px) {
             header {
-                flex-direction: column; /* Stack vertically */
-                gap: 15px; /* Add space between title and buttons */
+                flex-direction: column; 
+                gap: 15px; 
             }
             header h1 {
-                font-size: 1.2rem; /* Smaller font for mobile */
+                font-size: 1.2rem;
                 text-align: center;
             }
             .header-buttons {
                 width: 100%;
-                justify-content: center; /* Center buttons */
-                flex-wrap: wrap; /* Let buttons wrap to next line if needed */
+                justify-content: center; 
+                flex-wrap: wrap;
             }
         }
 
@@ -72,11 +71,10 @@
         .apexcharts-yaxis-label { white-space: nowrap !important; }
 
         @media (max-width: 600px) {
-            .charts-grid { grid-template-columns: 1fr; } /* Force 1 column for charts on mobile */
-            .chart-card { min-width: 0; } /* Allow charts to shrink */
+            .charts-grid { grid-template-columns: 1fr; }
+            .chart-card { min-width: 0; }
         }
 
-        /* Modal Styles */
         .modal {
             display: none; 
             position: fixed; 
@@ -89,11 +87,11 @@
         .modal-content {
             background-color: var(--card-color);
             color: var(--text-color);
-            margin: 5% auto; /* Adjusted margin */
+            margin: 5% auto;
             padding: 20px;
             border: 1px solid var(--border-color);
             border-radius: 10px;
-            width: 90%; /* Responsive width */
+            width: 90%;
             max-width: 500px;
         }
         .close-button {
@@ -233,7 +231,6 @@
             }
         }
 
-        // --- CHART FUNCTIONS ---
         function renderAchievementPieChart(d) {
             const options = { 
                 series: d.series, 

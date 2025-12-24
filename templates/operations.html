@@ -27,6 +27,18 @@
             padding: 10px 15px; font-size: 16px; border-radius: 8px; border: 1px solid #ccc;
             font-family: 'Poppins', sans-serif; cursor: pointer; background-color: #fff;
         }
+        
+        .back-btn {
+            background-color: var(--header-color);
+            color: white; 
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 5px; 
+            font-size: 14px;
+            transition: background 0.3s;
+            margin-right: 10px;
+        }
+        .back-btn:hover { background-color: #303f9f; }
     </style>
 </head>
 <body>
@@ -82,7 +94,6 @@
                 const response = await fetch(`/api/operations?month=${encodeURIComponent(month)}`);
                 const data = await response.json();
 
-                // --- CHART 1: Occupied (Red) vs Vacant (Green) ---
                 const totalCapacities = data.used.map((u, i) => u + data.unused[i]);
                 const maxOpsVal = Math.max(...totalCapacities);
 
@@ -92,7 +103,7 @@
                         { name: 'Remaining', data: data.unused }
                     ],
                     chart: { type: 'bar', height: 550, stacked: true, toolbar: { show: false } },
-                    colors: ['#f50226', '#05fa7f'], // Red & Green
+                    colors: ['#f50226', '#05fa7f'], // colors
                     grid: { padding: { right: 80, left: 0 } },
                     plotOptions: {
                         bar: { horizontal: true, barHeight: '55%', dataLabels: { total: { enabled: true, offsetX: 10, style: { fontSize: '12px', fontWeight: 700, color: '#333' } } } }

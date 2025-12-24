@@ -18,7 +18,6 @@
         .chart-section { margin-top: 30px; }
         .section-header { margin-top: 60px; border-top: 2px solid #eee; padding-top: 20px; }
 
-        /* --- LAYOUT RATIOS (Pie: 40%, Bar: 60%) --- */
         .charts-row { 
             display: flex; 
             gap: 20px; 
@@ -28,6 +27,18 @@
         }
         .col-small { flex: 2; min-width: 450px; }
         .col-large { flex: 3; min-width: 500px; }
+
+        .back-btn {
+            background-color: var(--header-color);
+            color: white; 
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 5px; 
+            font-size: 14px;
+            transition: background 0.3s;
+            margin-right: 10px;
+        }
+        .back-btn:hover { background-color: #303f9f; }
     </style>
 </head>
 <body>
@@ -68,18 +79,17 @@
                 const totalActual = actualSpendList.reduce((a, b) => a + b, 0);
                 const totalUnutilized = unutilizedList.reduce((a, b) => a + b, 0);
 
-                // Calculate Max for Breakdown Chart scaling
+                
                 const rowTotals = actualSpendList.map((val, i) => val + unutilizedList[i]);
                 const maxBudgetVal = Math.max(...rowTotals);
 
-                // --- 1. TOP CHART (Total Utilization) ---
                 const totalUtilOptions = {
                     series: [
                         { name: 'Consumed', data: [totalActual] }, 
                         { name: 'Remaining', data: [totalUnutilized] }
                     ],
                     chart: { type: 'bar', height: 150, stacked: true, stackType: '100%', toolbar: { show: false } },
-                    colors: ['#f70a2c', '#05fc81'], // Red & Green
+                    colors: ['#f70a2c', '#05fc81'], // color
                     plotOptions: { bar: { horizontal: true, barHeight: '50%' } },
                     xaxis: { categories: ['Total Budget'], labels: {show: false}, axisBorder: {show: false}, axisTicks: {show: false} },
                     tooltip: { y: { formatter: (val) => "₹ " + val.toLocaleString() } },
@@ -87,7 +97,6 @@
                 };
                 new ApexCharts(document.querySelector("#totalUtilizationChart"), totalUtilOptions).render();
 
-                // --- 2. PIE CHART ---
                 const totalPerCategory = data.categories.map((cat, i) => data.series[0].data[i] + data.series[1].data[i]);
                 const pieOptions = {
                     series: totalPerCategory, labels: data.categories,
@@ -97,9 +106,7 @@
                 };
                 new ApexCharts(document.querySelector("#budgetPieChart"), pieOptions).render();
 
-                // --- 3. BREAKDOWN CHART (Renamed & Recolored) ---
                 const stackOptions = {
-                    // Map the API data to new names: Actual Spend -> Consumed, Unutilized -> Remaining
                     series: [
                         { name: 'Consumed', data: actualSpendList },
                         { name: 'Remaining', data: unutilizedList }
@@ -110,7 +117,7 @@
                         stacked: true, 
                         toolbar: { show: false } 
                     }, 
-                    colors: ['#f70a2c', '#05fc81'], // Red & Green
+                    colors: ['#f70a2c', '#05fc81'],
                     
                     grid: {
                         padding: { right: 80, left: 0 }

@@ -7,18 +7,16 @@ import traceback
 import os
 import json
 import io
-
-# --- IMPORTS FOR MATPLOTLIB ---
 import matplotlib
 matplotlib.use('Agg') 
 import matplotlib.pyplot as plt
 
 app = Flask(__name__)
 
-# --- CACHE CONFIGURATION ---
+#CACHE CONFIGURATION
 cache = Cache(app, config={'CACHE_TYPE': 'SimpleCache', 'CACHE_DEFAULT_TIMEOUT': 100})
 
-# --- AUTHENTICATION ---
+#AUTHENTICATION
 def get_gspread_client():
     scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
     creds_json_str = os.environ.get('GCP_CREDS')
@@ -29,7 +27,7 @@ def get_gspread_client():
         creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
     return gspread.authorize(creds)
 
-# --- HELPER: GENERIC SHEET FETCHER ---
+#SHEET FETCHER
 def get_dataframe_by_sheet_name(sheet_name_or_index):
     client = get_gspread_client()
     sheet_url = 'https://docs.google.com/spreadsheets/d/1YiXrlu6qxtorsoDThvB62HTVSuWE9BhQ9J-pbFH6dGc/edit?gid=0#gid=0'
@@ -47,7 +45,7 @@ def get_dataframe_by_sheet_name(sheet_name_or_index):
         print(f"!!! Error fetching sheet '{sheet_name_or_index}': {e}")
         return pd.DataFrame()
 
-# --- HELPER: COLUMN NORMALIZER ---
+#Data Normalization
 def normalize_columns(df):
     df.columns = df.columns.str.strip()
     new_cols = {}
@@ -65,7 +63,7 @@ def normalize_columns(df):
     df = df.rename(columns=new_cols)
     return df
 
-# --- EXISTING HELPERS ---
+#another sheet fetching
 def get_sheet_dataframe():
     return get_dataframe_by_sheet_name(0)
 
@@ -93,7 +91,7 @@ def get_operations_dataframe():
         print(f"Error accessing Sheet2: {e}")
         return pd.DataFrame()
 
-# --- ROUTES ---
+#ROUTES
 @app.route('/')
 def index(): return render_template('index.html')
 
@@ -110,7 +108,7 @@ def operations_page(): return render_template('operations.html')
 def staff_summit_page(): return render_template('staff.html')
 
 
-# --- MAIN DASHBOARD API (Cached) ---
+#Achivements DASHBOARD
 @app.route('/api/data')
 @cache.cached(timeout=300, query_string=True) 
 def get_data():
@@ -248,7 +246,7 @@ def get_operations_data():
         })
     except Exception as e: return jsonify({"error": str(e)}), 500
 
-# --- STAFF SUMMIT API (CACHED) ---
+# STAFF SUMMIT
 @app.route('/api/staff_data')
 @cache.cached(timeout=300)
 def get_staff_data():
@@ -275,7 +273,7 @@ def get_staff_data():
             'series': g_counts['count'].astype(int).tolist()
         }
 
-        # 1. Department Bar (Achievements Count - Top 10)
+        #Department-wise Achievements
         dept_data = {'categories': [], 'series': []}
         if 'Department' in df.columns:
             d_counts = df['Department'].value_counts().reset_index()
@@ -285,7 +283,7 @@ def get_staff_data():
                 'series': d_counts['count'].tolist()
             }
 
-        # 2. Department Bar (Total Points - Top 10)
+        # Department Total Points
         dept_points_data = {'categories': [], 'series': []}
         if 'Department' in df.columns and 'Points' in df.columns:
             df['Points'] = pd.to_numeric(df['Points'], errors='coerce').fillna(0)
@@ -329,15 +327,15 @@ def get_winners():
         df = normalize_columns(df)
         if 'Sport' in df.columns: df['Sport'] = df['Sport'].str.strip().str.title()
         
-        # 1. Filter by Sport
+        # Filter by Sport
         filtered = df[df['Sport'] == sport]
 
-        # 2. Filter by Points (10 OR 5)
+        # Filter by Points (10 OR 5)
         if 'Points' in filtered.columns:
             filtered = filtered[pd.to_numeric(filtered['Points'], errors='coerce').isin([10, 5])]
             filtered = filtered.sort_values(by='Points', ascending=False)
 
-        # 3. Select columns
+        # Select columns
         cols_to_keep = ['Name', 'Department', 'Points']
         if 'Event' in filtered.columns: cols_to_keep.append('Event')
         if 'Gender' in filtered.columns: cols_to_keep.append('Gender')
@@ -349,7 +347,7 @@ def get_winners():
     except Exception as e: 
         return jsonify({"error": str(e)}), 500
 
-# --- EXPORT GRAPH AS IMAGE (POINTS) ---
+# Total points graph as image using matplotlib 
 @app.route('/api/export/department_points_image')
 def export_dept_points_image():
     try:
@@ -391,7 +389,7 @@ def export_dept_points_image():
         print(e)
         return f"Error creating image: {str(e)}", 500
 
-# --- NEW: EXPORT GRAPH AS IMAGE (PARTICIPANTS) ---
+# Participants graph as image using matplotlib 
 @app.route('/api/export/department_participants_image')
 def export_dept_participants_image():
     try:
@@ -402,7 +400,7 @@ def export_dept_participants_image():
         if 'Department' not in df.columns:
             return "Required columns missing", 400
 
-        # Data Prep (Count rows)
+        # Data Prep 
         report = df['Department'].value_counts().reset_index()
         report.columns = ['Department', 'Count']
         report = report.sort_values(by='Count', ascending=True)
