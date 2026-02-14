@@ -18,92 +18,41 @@
         .container { max-width: 1400px; margin: auto; display: flex; flex-direction: column; gap: 20px; }
         
         header { 
-            background: var(--card-color); 
-            padding: 15px 20px; 
-            border-radius: 10px; 
-            box-shadow: 0 4px 12px var(--shadow-color); 
-            text-align: center; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
+            background: var(--card-color); padding: 15px 20px; border-radius: 10px; 
+            box-shadow: 0 4px 12px var(--shadow-color); display: flex; 
+            justify-content: space-between; align-items: center; 
         }
         header h1 { margin: 0; color: var(--header-color); font-weight: 700; font-size: 1.5rem; }
-        .header-buttons { display: flex; gap: 10px; }
-        .reset-button { background-color: transparent; border: 1px solid var(--header-color); border-radius: 20px; padding: 8px 12px; cursor: pointer; font-size: 14px; color: var(--header-color); }
-        
-        /* Back button*/
-        .back-btn {
-            background-color: var(--header-color);
-            color: white; 
-            text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 5px; 
-            font-size: 14px;
-            transition: background 0.3s;
-            margin-right: 10px;
-        }
-        .back-btn:hover { background-color: #303f9f; } 
+        .back-btn { background-color: var(--header-color); color: white; text-decoration: none; padding: 8px 16px; border-radius: 5px; font-size: 14px; transition: background 0.3s; margin-right: 10px; }
 
-        
-        @media (max-width: 768px) {
-            header {
-                flex-direction: column; 
-                gap: 15px; 
-            }
-            header h1 {
-                font-size: 1.2rem;
-                text-align: center;
-            }
-            .header-buttons {
-                width: 100%;
-                justify-content: center; 
-                flex-wrap: wrap;
-            }
-        }
+        .top-row-grid { display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
+        .kpi-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .kpi-card { background: var(--card-color); padding: 15px; border-radius: 10px; box-shadow: 0 4px 12px var(--shadow-color); text-align: center; display: flex; flex-direction: column; justify-content: center; }
+        .kpi-card .value { font-size: 1.8em; font-weight: 700; color: var(--header-color); margin: 0; }
+        .kpi-card .label { font-size: 0.8em; color: var(--text-color); opacity: 0.7; margin-top: 2px; line-height: 1.2; }
 
-        .kpi-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
-        .kpi-card { background: var(--card-color); padding: 25px; border-radius: 10px; box-shadow: 0 4px 12px var(--shadow-color); text-align: center; }
-        .kpi-card .value { font-size: 2.5em; font-weight: 700; color: var(--header-color); margin: 0; }
-        .kpi-card .label { font-size: 1em; color: var(--text-color); opacity: 0.7; margin-top: 5px; }
+        .details-card { background: var(--card-color); padding: 15px; border-radius: 10px; box-shadow: 0 4px 12px var(--shadow-color); border: 1px solid var(--header-color); text-align: center; }
+        .details-card h3 { font-size: 0.95rem; margin: 0 0 10px 0; color: var(--header-color); font-weight: 600; }
+        .school-select { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid var(--border-color); font-family: 'Poppins'; font-size: 13px; margin-bottom: 10px; }
+        .download-btn { background-color: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 600; display: none; width: 100%; transition: 0.3s; }
+        .download-btn:hover { background-color: #218838; }
+
         .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px; }
-        .chart-card { background: var(--card-color); padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px var(--shadow-color); min-height: 400px; display: flex; flex-direction: column; }
-        .chart-card h3 { margin-top: 0; margin-bottom: 20px; text-align: center; color: var(--text-color); font-weight: 600; }
-        .apexcharts-yaxis-label { white-space: nowrap !important; }
+        .chart-card { background: var(--card-color); padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px var(--shadow-color); min-height: 400px; }
+        .chart-card h3 { text-align: center; color: var(--text-color); font-weight: 600; margin-bottom: 20px; }
 
-        @media (max-width: 600px) {
-            .charts-grid { grid-template-columns: 1fr; }
-            .chart-card { min-width: 0; }
+        .list-section { margin-top: 30px; text-align: center; display: none; }
+        .table-wrapper { 
+            margin: 0 auto; max-width: 1100px; background: white; 
+            border-radius: 10px; box-shadow: 0 4px 12px var(--shadow-color); 
+            overflow-y: auto; max-height: 500px; border: 1px solid var(--border-color);
         }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: var(--header-color); color: white; padding: 12px; position: sticky; top: 0; z-index: 10; }
+        td { padding: 12px; border-bottom: 1px solid var(--border-color); color: #444; font-size: 14px; }
+        tr:hover { background-color: #f8f9fa; }
 
-        .modal {
-            display: none; 
-            position: fixed; 
-            z-index: 1000;
-            left: 0; top: 0;
-            width: 100%; height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.5); 
-        }
-        .modal-content {
-            background-color: var(--card-color);
-            color: var(--text-color);
-            margin: 5% auto;
-            padding: 20px;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            width: 90%;
-            max-width: 500px;
-        }
-        .close-button {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .close-button:hover {
-            color: var(--header-color);
-        }
+        @media (max-width: 1024px) { .top-row-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -111,45 +60,49 @@
     <div class="container">
         <header>
             <a href="/" class="back-btn">← Back to Home</a>
-            <h1 style="text-align: center;">Sports Achievements Dashboard (2025-26)</h1>
-            <div class="header-buttons">
-                <button id="resetFiltersBtn" class="reset-button" style="display: none;">Reset Filters</button>
-            </div>
+            <h1>Sports Achievements Dashboard (2025-26)</h1>
+            <div style="width: 100px;"></div>
         </header>
 
-        <div class="kpi-container">
-            <div class="kpi-card"><p class="value" id="totalAchievementsValue">0</p><p class="label">Total Athlets Achievements</p></div>
-            <div class="kpi-card"><p class="value" id="totalPointsValue">0</p><p class="label">Total Points</p></div>
-            <div class="kpi-card"><p class="value" id="uniqueSportsValue">0</p><p class="label">Participated Sports Activity</p></div>
+        <div class="top-row-grid">
+            <div class="kpi-container">
+                <div class="kpi-card"><p class="value" id="totalAchievementsValue">0</p><p class="label">Total Athletes Achievements</p></div>
+                <div class="kpi-card"><p class="value" id="totalPointsValue">0</p><p class="label">Total Points</p></div>
+                <div class="kpi-card"><p class="value" id="uniqueSportsValue">0</p><p class="label">Participated Sports Activity</p></div>
+            </div>
+
+            <div class="details-card">
+                <h3>Participants Details</h3>
+                <select id="schoolDropdown" class="school-select" onchange="loadParticipantsBySchool()">
+                    <option value="">Select School Name...</option>
+                </select>
+                <button id="downloadListBtn" class="download-btn" onclick="downloadExcel()">Download List (Excel)</button>
+            </div>
         </div>
         
         <div class="charts-grid">
-            <div class="chart-card"><h3 >Achievements Level</h3><div id="achievementTypesChart"></div></div>
-            <div class="chart-card"><h3 >Gender Distribution of Athletes</h3><div id="genderDistributionChart"></div></div>
-            <div class="chart-card"><h3 >All Sports Participated by Athletes</h3><div id="sportsPieChart"></div></div>
-            <div class="chart-card"><h3 >All Achievements</h3><div id="achievementPieChart"></div></div>
-            <div class="chart-card"><h3 >School-wise Achievements</h3><div id="schoolParticipationChart"></div></div>
-            <div class="chart-card"><h3 >Top 6 Sports</h3><div id="popularSportsChart"></div></div>
-            
-            <div class="chart-card" style="grid-column: 1 / -1;"><h3 >Gender-wise Participation in Sports</h3><div id="sportByGenderChart"></div></div>
+            <div class="chart-card"><h3>Achievements Level</h3><div id="achievementTypesChart"></div></div>
+            <div class="chart-card"><h3>Gender Distribution of Athletes</h3><div id="genderDistributionChart"></div></div>
+            <div class="chart-card"><h3>All Sports Participated by Athletes</h3><div id="sportsPieChart"></div></div>
+            <div class="chart-card"><h3>All Achievements</h3><div id="achievementPieChart"></div></div>
+            <div class="chart-card"><h3>School-wise Achievements</h3><div id="schoolParticipationChart"></div></div>
+            <div class="chart-card"><h3>Top 6 Sports</h3><div id="popularSportsChart"></div></div>
+            <div class="chart-card" style="grid-column: 1 / -1;"><h3>Gender-wise Participation in Sports</h3><div id="sportByGenderChart"></div></div>
         </div>
-    </div>
 
-    <div id="studentModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h3 id="modalTitle">Students</h3>
-            <div style="max-height: 300px; overflow-y: auto;">
-                <table id="studentTable" style="width: 100%; border-collapse: collapse;">
+        <div class="list-section" id="listSection">
+            <h2 id="listTitle" style="color: var(--header-color); margin-bottom: 15px;"></h2>
+            <div class="table-wrapper">
+                <table>
                     <thead>
-                        <tr style="text-align: left;">
-                            <th style="padding: 8px; border-bottom: 2px solid var(--header-color);">SR. NO</th>
-                            <th style="padding: 8px; border-bottom: 2px solid var(--header-color);">Name</th>
-                            <th style="padding: 8px; border-bottom: 2px solid var(--header-color);">Gender</th>
-                            <th style="padding: 8px; border-bottom: 2px solid var(--header-color);">School</th>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Department</th>
+                            <th>Achievement</th>
+                            <th>Sport</th>
                         </tr>
                     </thead>
-                    <tbody id="studentTableBody"></tbody>
+                    <tbody id="participantTableBody"></tbody>
                 </table>
             </div>
         </div>
@@ -157,174 +110,118 @@
 
     <script>
         let charts = {};
-        let activeFilters = {}; 
-        const resetBtn = document.getElementById('resetFiltersBtn');
-        const modal = document.getElementById('studentModal');
-        const closeModalBtn = document.querySelector('.close-button');
+        let currentSchoolData = [];
 
-        closeModalBtn.onclick = () => { modal.style.display = 'none'; }
-        
-        window.onclick = (event) => { if (event.target == modal) modal.style.display = 'none'; }
-
-        async function fetchAndShowStudents(sportName) {
-            const modalTitle = document.getElementById('modalTitle');
-            const tableBody = document.getElementById('studentTableBody');
-            modalTitle.innerText = `Students in ${sportName}`;
-            tableBody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
-            modal.style.display = 'block';
-
+        async function fetchData() {
             try {
-                const response = await fetch(`/api/students_by_sport?sport=${encodeURIComponent(sportName)}`);
-                const students = await response.json();
-                tableBody.innerHTML = ''; 
-
-                if (students.length > 0) {
-                    students.sort((a, b) => a['NAME OF STUDENT'].localeCompare(b['NAME OF STUDENT']));
-                    let serialNumber = 1; 
-                    students.forEach(student => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td style="padding: 8px; border-bottom: 1px solid var(--border-color);">${serialNumber}</td>
-                            <td style="padding: 8px; border-bottom: 1px solid var(--border-color);">${student['NAME OF STUDENT']}</td>
-                            <td style="padding: 8px; border-bottom: 1px solid var(--border-color);">${student['GENDER']}</td>
-                            <td style="padding: 8px; border-bottom: 1px solid var(--border-color);">${student['School']}</td>
-                        `;
-                        tableBody.appendChild(row);
-                        serialNumber++;
-                    });
-                } else {
-                    tableBody.innerHTML = '<tr><td colspan="4">No students found.</td></tr>';
-                }
-            } catch (error) {
-                console.error('Error fetching student list:', error);
-                tableBody.innerHTML = '<tr><td colspan="4">Could not load student list.</td></tr>';
-            }
-        }       
-        
-        async function fetchDataAndRenderCharts() {
-            updateResetButtonVisibility();
-            const params = new URLSearchParams(activeFilters);
-            try {
-                const response = await fetch(`/api/data?${params.toString()}`);
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Server Error (${response.status}): ${errorText}`);
-                }
+                const response = await fetch('/api/data');
                 const data = await response.json();
-                if (data.error) throw new Error(data.error);
 
-                Object.values(charts).forEach(chart => chart?.destroy());
-                charts = {};
+                document.getElementById('totalAchievementsValue').innerText = data.kpiMetrics.totalAchievements;
+                document.getElementById('totalPointsValue').innerText = data.kpiMetrics.totalPoints;
+                document.getElementById('uniqueSportsValue').innerText = data.kpiMetrics.uniqueSports;
 
-                updateKpiCards(data.kpiMetrics);
-                renderSchoolChart(data.schoolParticipation);
-                renderGenderChart(data.genderDistribution);
-                renderAchievementTypesBarChart(data.achievementTypesBar);
-                renderPopularSportsBarChart(data.popularSportsBar);
-                renderSportByGenderChart(data.sportByGender);
-                renderAchievementPieChart(data.achievementTypesPie);
-                renderSportsPieChart(data.sportsPie);
-
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                alert("DASHBOARD ERROR:\n" + error.message); // Visual Alert
-            }
+                const dropdown = document.getElementById('schoolDropdown');
+                if (dropdown.options.length <= 1) {
+                    data.schoolParticipation.forEach(item => {
+                        const opt = document.createElement('option');
+                        opt.value = item.School;
+                        opt.innerHTML = item.School;
+                        dropdown.appendChild(opt);
+                    });
+                }
+                renderDashboard(data);
+            } catch (error) { console.error("Error:", error); }
         }
 
-        function renderAchievementPieChart(d) {
-            const options = { 
-                series: d.series, 
-                chart: { type: 'pie', height: 600, toolbar: { show: true } }, 
-                labels: d.labels, 
-                legend: { 
-                    show: true, position: 'bottom', horizontalAlign: 'center', 
-                    fontSize: '13px', fontFamily: 'Poppins',
-                    markers: { width: 10, height: 10, radius: 12 },
-                    itemMargin: { horizontal: 10, vertical: 5 }
-                }, 
-                theme: { mode: getCurrentChartTheme() } 
-            };
-            charts.achievementPie = new ApexCharts(document.querySelector("#achievementPieChart"), options);
-            charts.achievementPie.render();
+        function renderDashboard(data) {
+            Object.values(charts).forEach(c => { if(c) c.destroy(); });
+            charts = {};
+            const mode = 'light';
+
+            const barOptions = (id, labels, series, horizontal = true) => ({
+                series: [{ name: 'Count', data: series }],
+                chart: { type: 'bar', height: 350, toolbar: { show: true } },
+                plotOptions: { bar: { horizontal: horizontal, distributed: true, barHeight: '70%' } },
+                xaxis: { categories: labels },
+                theme: { mode },
+                legend: { show: false }
+            });
+
+            charts.achLevel = new ApexCharts(document.querySelector("#achievementTypesChart"), barOptions("achLevel", data.achievementTypesBar.map(i => i.Type), data.achievementTypesBar.map(i => i.Count))).render();
+            charts.schoolAch = new ApexCharts(document.querySelector("#schoolParticipationChart"), barOptions("schoolAch", data.schoolParticipation.map(i => i.School), data.schoolParticipation.map(i => i.Achievements))).render();
+            charts.popSports = new ApexCharts(document.querySelector("#popularSportsChart"), barOptions("popSports", data.popularSportsBar.map(i => i.Sport), data.popularSportsBar.map(i => i.Participants), true)).render();
+
+            charts.gender = new ApexCharts(document.querySelector("#genderDistributionChart"), {
+                series: data.genderDistribution.series,
+                labels: data.genderDistribution.labels,
+                chart: { type: 'donut', height: 350 },
+                colors: ['#3366FF', '#00E396'],
+                theme: { mode }
+            }).render();
+
+            charts.sportsPie = new ApexCharts(document.querySelector("#sportsPieChart"), {
+                series: data.sportsPie.series,
+                labels: data.sportsPie.labels,
+                chart: { type: 'pie', height: 400 },
+                theme: { mode }
+            }).render();
+
+            charts.achPie = new ApexCharts(document.querySelector("#achievementPieChart"), {
+                series: data.achievementTypesPie.series,
+                labels: data.achievementTypesPie.labels,
+                chart: { type: 'pie', height: 600, toolbar: { show: true } },
+                legend: { position: 'bottom' },
+                theme: { mode }
+            }).render();
+
+            charts.genderSport = new ApexCharts(document.querySelector("#sportByGenderChart"), {
+                series: data.sportByGender.series,
+                chart: { type: 'bar', height: 500, stacked: true },
+                plotOptions: { bar: { horizontal: true } },
+                xaxis: { categories: data.sportByGender.categories },
+                theme: { mode }
+            }).render();
         }
 
-         function renderSportsPieChart(d) {
-            const options = {
-                series: d.series,
-                chart: { 
-                    type: 'pie', 
-                    height: 450,
-                    events: {
-                        dataPointSelection: (event, chartContext, config) => {
-                            const selectedSport = config.w.globals.labels[config.dataPointIndex];
-                            fetchAndShowStudents(selectedSport);
-                        }
-                    }
-                },
-                labels: d.labels,
-                legend: { 
-                    position: 'bottom', horizontalAlign: 'center',
-                    fontSize: '13px', fontFamily: 'Poppins',
-                    markers: { width: 10, height: 10, radius: 12 },
-                    itemMargin: { horizontal: 10, vertical: 5 }
-                },
-                theme: { mode: getCurrentChartTheme() } 
-            };
-            charts.sportsPie = new ApexCharts(document.querySelector("#sportsPieChart"), options);
-            charts.sportsPie.render();
+        async function loadParticipantsBySchool() {
+            const schoolName = document.getElementById('schoolDropdown').value;
+            const listSection = document.getElementById('listSection');
+            const tableBody = document.getElementById('participantTableBody');
+            if (!schoolName) { listSection.style.display = 'none'; return; }
+
+            try {
+                const response = await fetch(`/api/participants_by_school?school=${encodeURIComponent(schoolName)}`);
+                currentSchoolData = await response.json();
+                tableBody.innerHTML = currentSchoolData.map(item => `
+                    <tr>
+                        <td style="white-space: pre-line;">${item['NAME OF STUDENT']}</td>
+                        <td>${item['School']}</td>
+                        <td>${item['RESULTS']}</td>
+                        <td>${item['Sport']}</td>
+                    </tr>`).join('');
+                document.getElementById('listTitle').innerText = `Participants - ${schoolName}`;
+                listSection.style.display = 'block';
+                document.getElementById('downloadListBtn').style.display = 'block';
+                listSection.scrollIntoView({ behavior: 'smooth' });
+            } catch (err) { console.error("Error:", err); }
         }
 
-        function renderAchievementTypesBarChart(d) {
-            const options = { series: [{ name: 'Count', data: d.map(i => i.Count) }], chart: { type: 'bar', height: 350 }, plotOptions: { bar: { horizontal: true } }, xaxis: { categories: d.map(i => i.Type) }, tooltip: { y: { title: { formatter: () => 'Count:' } } }, theme: { mode: getCurrentChartTheme() } };
-            charts.achievementBar = new ApexCharts(document.querySelector("#achievementTypesChart"), options);
-            charts.achievementBar.render();
+        function downloadExcel() {
+            let csvContent = "\uFEFF";
+            csvContent += "Student Name,Department,Achievement,Sport\n";
+            currentSchoolData.forEach(row => {
+                const name = `"${row['NAME OF STUDENT'].replace(/\n/g, ' ')}"`;
+                csvContent += `${name},"${row['School']}","${row['RESULTS']}","${row['Sport']}"\n`;
+            });
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `Participants_${document.getElementById('schoolDropdown').value}.csv`;
+            link.click();
         }
 
-        function renderPopularSportsBarChart(d) {
-            const options = {
-                series: [{ name: 'Participants', data: d.map(i => i.Participants) }],
-                chart: { type: 'bar', height: 400, toolbar: { show: false } },
-                plotOptions: { bar: { horizontal: true, distributed: true, barHeight: '70%' } },
-                xaxis: { categories: d.map(i => i.Sport) },
-                legend: {
-                    show: true, position: 'bottom', horizontalAlign: 'center', floating: false,
-                    fontSize: '14px', fontFamily: 'Poppins', itemMargin: { horizontal: 10, vertical: 5 },
-                    markers: { radius: 0, width: 12, height: 12 }
-                },
-                theme: { mode: getCurrentChartTheme() }
-            };
-            charts.popularBar = new ApexCharts(document.querySelector("#popularSportsChart"), options);
-            charts.popularBar.render();
-        }
-
-        function renderSchoolChart(d) { const options = { series: [{ name: 'Achievements', data: d.map(i => i.Achievements) }], chart: { type: 'bar', height: 400, events: { dataPointSelection: (e, chart, config) => { const selectedSchool = config.w.globals.labels[config.dataPointIndex]; applyFilter('School', selectedSchool); } } }, plotOptions: { bar: { horizontal: true, barHeight: '70%', distributed: true } }, dataLabels: { enabled: true, textAnchor: 'end', offsetX: -10, style: { colors: ['#fff'] }, formatter: (v) => v }, xaxis: { categories: d.map(i => i.School) }, yaxis: { labels: { show: true, style: { colors: [getCurrentChartTheme() === 'light' ? '#333' : '#eee'] } } }, legend: { show: false }, tooltip: { y: { formatter: (v, { seriesIndex, dataPointIndex, w }) => { const schoolName = w.globals.labels[dataPointIndex]; return `${schoolName}: ${v} Achievements`; }, title: { formatter: () => '' } } }, theme: { mode: getCurrentChartTheme() } }; charts.school = new ApexCharts(document.querySelector("#schoolParticipationChart"), options); charts.school.render(); }
-        
-        function renderGenderChart(d) {
-            const colorMap = { 'Boys': '#3366FF', 'Girls': '#00E396' };
-            const orderedColors = d.labels.map(label => colorMap[label] || '#808080');
-            const options = {
-                series: d.series, colors: orderedColors,
-                chart: { type: 'donut', height: 350, toolbar: { show: true }, events: { dataPointSelection: (e, chart, config) => { applyFilter('GENDER', config.w.globals.labels[config.dataPointIndex]); } } },
-                labels: d.labels,
-                plotOptions: { pie: { donut: { labels: { show: true, total: { show: true, label: 'Total Athletes' } } } } },
-                legend: { position: 'bottom' }, theme: { mode: getCurrentChartTheme() }
-            };
-            charts.gender = new ApexCharts(document.querySelector("#genderDistributionChart"), options);
-            charts.gender.render();
-        }
-
-        function renderSportByGenderChart(d) { const options = { series: d.series, chart: { type: 'bar', height: 500, stacked: true }, plotOptions: { bar: { horizontal: true } }, stroke: { width: 1, colors: ['#fff'] }, xaxis: { categories: d.categories }, yaxis: { title: { text: undefined } }, tooltip: { y: { formatter: (v) => v + " athletes" } }, fill: { opacity: 1 }, legend: { position: 'top', horizontalAlign: 'left' }, theme: { mode: getCurrentChartTheme() } }; charts.sportGender = new ApexCharts(document.querySelector("#sportByGenderChart"), options); charts.sportGender.render(); }
-
-        const currentTheme = localStorage.getItem('theme'); if (currentTheme) document.body.classList.add(currentTheme); 
-        
-        resetBtn.addEventListener('click', () => { activeFilters = {}; fetchDataAndRenderCharts(); }); 
-        function applyFilter(key, value) { if (activeFilters[key] === value) { delete activeFilters[key]; } else { activeFilters[key] = value; } fetchDataAndRenderCharts(); } 
-        function updateResetButtonVisibility() { resetBtn.style.display = Object.keys(activeFilters).length > 0 ? 'inline-block' : 'none'; } 
-        function updateKpiCards(kpiData) { document.getElementById('totalAchievementsValue').innerText = kpiData.totalAchievements.toLocaleString(); document.getElementById('totalPointsValue').innerText = kpiData.totalPoints.toLocaleString(); document.getElementById('uniqueSportsValue').innerText = kpiData.uniqueSports.toLocaleString(); } 
-        function getCurrentChartTheme() { return document.body.classList.contains('dark-theme') ? 'dark' : 'light'; } 
-        function updateAllChartThemes() { const newTheme = { theme: { mode: getCurrentChartTheme() } }; Object.values(charts).forEach(chart => chart?.updateOptions(newTheme)); }
-        
-        document.addEventListener('DOMContentLoaded', fetchDataAndRenderCharts);
+        document.addEventListener('DOMContentLoaded', fetchData);
     </script>
 </body>
 </html>

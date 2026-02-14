@@ -13,10 +13,8 @@ import matplotlib.pyplot as plt
 
 app = Flask(__name__)
 
-#CACHE CONFIGURATION
 cache = Cache(app, config={'CACHE_TYPE': 'SimpleCache', 'CACHE_DEFAULT_TIMEOUT': 100})
 
-#AUTHENTICATION
 def get_gspread_client():
     scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
     creds_json_str = os.environ.get('GCP_CREDS')
@@ -27,7 +25,6 @@ def get_gspread_client():
         creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
     return gspread.authorize(creds)
 
-#SHEET FETCHER
 def get_dataframe_by_sheet_name(sheet_name_or_index):
     client = get_gspread_client()
     sheet_url = 'https://docs.google.com/spreadsheets/d/1YiXrlu6qxtorsoDThvB62HTVSuWE9BhQ9J-pbFH6dGc/edit?gid=0#gid=0'
@@ -45,7 +42,6 @@ def get_dataframe_by_sheet_name(sheet_name_or_index):
         print(f"!!! Error fetching sheet '{sheet_name_or_index}': {e}")
         return pd.DataFrame()
 
-#Data Normalization
 def normalize_columns(df):
     df.columns = df.columns.str.strip()
     new_cols = {}
@@ -63,7 +59,6 @@ def normalize_columns(df):
     df = df.rename(columns=new_cols)
     return df
 
-#another sheet fetching
 def get_sheet_dataframe():
     return get_dataframe_by_sheet_name(0)
 
@@ -107,8 +102,10 @@ def operations_page(): return render_template('operations.html')
 @app.route('/staff-summit')
 def staff_summit_page(): return render_template('staff.html')
 
+@app.route('/inter_department')
+def inter_department():
+    return render_template('inter_department.html')
 
-#Achivements DASHBOARD
 @app.route('/api/data')
 @cache.cached(timeout=300, query_string=True) 
 def get_data():
@@ -264,7 +261,6 @@ def get_staff_data():
             'totalPoints': int(pd.to_numeric(df['Points'], errors='coerce').sum()) if 'Points' in df.columns else 0
         }
 
-        # Gender Donut
         id_col = 'SR. NO' if 'SR. NO' in df.columns else 'Name'
         unique_p = df.drop_duplicates(subset=[id_col])
         g_counts = unique_p['Gender'].value_counts().reset_index()
@@ -273,7 +269,6 @@ def get_staff_data():
             'series': g_counts['count'].astype(int).tolist()
         }
 
-        #Department-wise Achievements
         dept_data = {'categories': [], 'series': []}
         if 'Department' in df.columns:
             d_counts = df['Department'].value_counts().reset_index()
@@ -283,7 +278,6 @@ def get_staff_data():
                 'series': d_counts['count'].tolist()
             }
 
-        # Department Total Points
         dept_points_data = {'categories': [], 'series': []}
         if 'Department' in df.columns and 'Points' in df.columns:
             df['Points'] = pd.to_numeric(df['Points'], errors='coerce').fillna(0)
@@ -314,7 +308,31 @@ def get_staff_data():
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+    
+@app.route('/api/staff_winners_list')
+@cache.cached(timeout=300, query_string=True)
+def get_staff_winners_list():
+    """Returns detailed winners list for a specific sport from Staff Summit sheet."""
+    try:
+        sport = request.args.get('sport')
+        df = get_dataframe_by_sheet_name('Staff Summit') #
+        
+        if df.empty: return jsonify([])
 
+        df = normalize_columns(df) 
+        
+        if 'Sport' in df.columns: 
+            df['Sport'] = df['Sport'].str.strip().str.title()
+        
+        filtered = df[(df['Sport'] == sport) & (pd.to_numeric(df['Points'], errors='coerce') > 0)]
+        
+        cols_to_keep = ['Name', 'Department', 'Gender', 'Event']
+        final_cols = [c for c in cols_to_keep if c in filtered.columns]
+
+        return jsonify(filtered[final_cols].to_dict(orient='records'))
+    except Exception as e: 
+        return jsonify({"error": str(e)}), 500
+    
 @app.route('/api/winners_by_sport')
 @cache.cached(timeout=300, query_string=True)
 def get_winners():
@@ -327,15 +345,12 @@ def get_winners():
         df = normalize_columns(df)
         if 'Sport' in df.columns: df['Sport'] = df['Sport'].str.strip().str.title()
         
-        # Filter by Sport
         filtered = df[df['Sport'] == sport]
 
-        # Filter by Points (10 OR 5)
         if 'Points' in filtered.columns:
             filtered = filtered[pd.to_numeric(filtered['Points'], errors='coerce').isin([10, 5])]
             filtered = filtered.sort_values(by='Points', ascending=False)
 
-        # Select columns
         cols_to_keep = ['Name', 'Department', 'Points']
         if 'Event' in filtered.columns: cols_to_keep.append('Event')
         if 'Gender' in filtered.columns: cols_to_keep.append('Gender')
@@ -347,7 +362,6 @@ def get_winners():
     except Exception as e: 
         return jsonify({"error": str(e)}), 500
 
-# Total points graph as image using matplotlib 
 @app.route('/api/export/department_points_image')
 def export_dept_points_image():
     try:
@@ -358,7 +372,6 @@ def export_dept_points_image():
         if 'Department' not in df.columns or 'Points' not in df.columns:
             return "Required columns missing", 400
 
-        # Data Prep
         df['Points'] = pd.to_numeric(df['Points'], errors='coerce').fillna(0)
         report = df.groupby('Department')['Points'].sum().reset_index()
         report = report.sort_values(by='Points', ascending=True)
@@ -388,8 +401,114 @@ def export_dept_points_image():
     except Exception as e:
         print(e)
         return f"Error creating image: {str(e)}", 500
+    
+@app.route('/api/participants_by_school')
+@cache.cached(timeout=300, query_string=True)
+def get_participants_by_school():
+    """Returns unique student details filtered by a specific school."""
+    school_name = request.args.get('school')
+    try:
+        df = get_sheet_dataframe() 
+        
+        df['School'] = df['School'].astype(str).str.strip()
+        df['Sport'] = df['Sport'].astype(str).str.strip().str.title()
+        df['RESULTS'] = df['RESULTS'].astype(str).str.strip()
+        df['NAME OF STUDENT'] = df['NAME OF STUDENT'].astype(str).str.strip()
 
-# Participants graph as image using matplotlib 
+        filtered_df = df[df['School'] == school_name]
+        
+        result = filtered_df[['NAME OF STUDENT', 'School', 'RESULTS', 'Sport']].drop_duplicates()
+        
+        return jsonify(result.to_dict(orient='records'))
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+        
+@app.route('/api/inter_department_data')
+def get_inter_department_data():
+    try:
+        client = get_gspread_client()
+        sheet_url = 'https://docs.google.com/spreadsheets/d/1YiXrlu6qxtorsoDThvB62HTVSuWE9BhQ9J-pbFH6dGc/edit'
+        spreadsheet = client.open_by_url(sheet_url)
+        sheet = spreadsheet.worksheet("Inter_department")
+        
+        all_values = sheet.get_all_values()
+        
+        headers = all_values[0]
+        
+        data_rows = all_values[1:]
+        
+        df = pd.DataFrame(data_rows, columns=headers)
+
+        df = df[df['SR No'].astype(str).str.strip() != ""]
+        df['SR No'] = pd.to_numeric(df['SR No'], errors='coerce')
+        df['Sport'] = df['Sport'].astype(str).str.strip().str.upper()
+
+        unique_achievements = df.drop_duplicates(subset=['SR No'])
+
+        kpi_metrics = {
+            'totalAchievements': len(unique_achievements),
+            'totalPoints': int(pd.to_numeric(unique_achievements['POINT'], errors='coerce').sum()),
+            'uniqueSports': unique_achievements['Sport'].nunique() 
+        }
+
+        achievement_counts = unique_achievements['RESULTS'].value_counts().reset_index()
+        achievement_counts.columns = ['Type', 'Count']
+        
+        sport_counts = unique_achievements['Sport'].value_counts().reset_index()
+        sport_counts.columns = ['Sport', 'Count']
+        
+        school_counts = unique_achievements['School'].value_counts().reset_index()
+        school_counts.columns = ['School', 'Achievements']
+
+        return jsonify({
+            'kpiMetrics': kpi_metrics,
+            'achievementLevel': achievement_counts.to_dict(orient='records'),
+            'sportsParticipated': {
+                'labels': sport_counts['Sport'].tolist(),
+                'series': sport_counts['Count'].tolist()
+            },
+            'allAchievements': {
+                'labels': achievement_counts['Type'].tolist(),
+                'series': achievement_counts['Count'].tolist()
+            },
+            'schoolAchievements': school_counts.to_dict(orient='records')
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500 
+    
+    
+@app.route('/api/inter_dept_participants')
+def get_inter_dept_participants():
+    """Filters and returns student details from the Inter_department sheet."""
+    list_type = request.args.get('type') 
+    
+    try:
+        client = get_gspread_client()
+        sheet_url = 'https://docs.google.com/spreadsheets/d/1YiXrlu6qxtorsoDThvB62HTVSuWE9BhQ9J-pbFH6dGc/edit'
+        spreadsheet = client.open_by_url(sheet_url)
+        sheet = spreadsheet.worksheet("Inter_department")
+        data = sheet.get_all_records()
+        df = pd.DataFrame(data)
+
+        df['RESULTS'] = df['RESULTS'].astype(str).str.strip()
+        df['Sport'] = df['Sport'].astype(str).str.strip().str.title()
+        df['School'] = df['School'].astype(str).str.strip()
+
+        if list_type == '1st':
+            filtered_df = df[df['RESULTS'].str.contains('1st', case=False)]
+        elif list_type == '2nd':
+            filtered_df = df[df['RESULTS'].str.contains('2nd', case=False)]
+        elif list_type == '3rd':
+            filtered_df = df[df['RESULTS'].str.contains('3rd', case=False)]
+        else:
+            filtered_df = df
+
+        student_list = filtered_df[['NAME OF STUDENT', 'School', 'Sport', 'RESULTS']]
+        
+        return jsonify(student_list.to_dict(orient='records'))
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+         
 @app.route('/api/export/department_participants_image')
 def export_dept_participants_image():
     try:

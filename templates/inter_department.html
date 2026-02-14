@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inter-Department Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        :root { 
+            --bg-color: #f4f7fc; 
+            --card-color: #ffffff; 
+            --text-color: #333333; 
+            --header-color: #1a237e; 
+        }
+        
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            margin: 0; 
+            padding: 20px; 
+        }
+
+        .container { 
+            max-width: 1400px; 
+            margin: auto; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+        }
+
+        header { 
+            background: var(--card-color); 
+            padding: 15px 20px; 
+            border-radius: 10px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+        }
+
+        .back-btn { 
+            text-decoration: none; 
+            color: var(--header-color); 
+            font-weight: 600; 
+            border: 1px solid var(--header-color); 
+            padding: 8px 15px; 
+            border-radius: 20px; 
+            transition: 0.3s;
+        }
+        .back-btn:hover { background: var(--header-color); color: white; }
+
+        /* KPI and Sidebar Container */
+        .kpi-container { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr) 280px;
+            gap: 20px; 
+        }
+
+        .kpi-card { 
+            background: var(--card-color); 
+            padding: 20px; 
+            border-radius: 10px; 
+            text-align: center; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .kpi-card .value { 
+            font-size: 2.2em; 
+            font-weight: 700; 
+            color: var(--header-color); 
+            margin: 0; 
+        }
+
+        .sidebar-card { padding: 15px !important; }
+        .sidebar-card h3 { font-size: 1rem; margin-top: 0; margin-bottom: 12px; }
+        .vertical-btns { display: flex; flex-direction: column; gap: 8px; }
+        .side-btn {
+            background: transparent;
+            color: var(--header-color);
+            font-weight: 600;
+            border: 1px solid var(--header-color);
+            padding: 6px 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: 0.3s;
+            font-family: 'Poppins', sans-serif;
+        }
+        .side-btn:hover { background: var(--header-color); color: white; }
+
+        .charts-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); 
+            gap: 20px; 
+        }
+
+        .chart-card { 
+            background: var(--card-color); 
+            padding: 20px; 
+            border-radius: 10px; 
+            min-height: 400px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+        }
+
+        h3 { text-align: center; color: var(--header-color); margin-bottom: 20px; }
+
+        .modal-content {
+            background: white; 
+            margin: 10% auto; 
+            padding: 20px; 
+            border-radius: 10px; 
+            width: 80%; 
+            max-width: 700px; 
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        @media (max-width: 1100px) {
+            .kpi-container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/" class="back-btn">← Back to Home</a>
+            <h1>Inter-Department Achievements</h1>
+            <div style="width: 100px;"></div>
+        </header>
+
+        <div class="kpi-container">
+            <div class="kpi-card"><p class="value" id="kpiTotal">0</p><p class="label">Total Achievements</p></div>
+            <div class="kpi-card"><p class="value" id="kpiPoints">0</p><p class="label">Total Points</p></div>
+            <div class="kpi-card"><p class="value" id="kpiSports">0</p><p class="label">Participated Sports</p></div>
+            
+            <div class="kpi-card sidebar-card">
+                <h3>Participants Details</h3>
+                <div class="vertical-btns">
+                    <button class="side-btn" onclick="showParticipantList('1st')">1st Prize Winners</button>
+                    <button class="side-btn" onclick="showParticipantList('2nd')">2nd Prize Winners</button>
+                    <button class="side-btn" onclick="showParticipantList('3rd')">3rd Prize Winners</button>
+                    <button class="side-btn" onclick="showParticipantList('all')">Full Participant List</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="charts-grid">
+            <div class="chart-card"><h3>Achievements Level</h3><div id="achievementLevelChart"></div></div>
+            <div class="chart-card"><h3>School-wise Achievements</h3><div id="schoolAchievementsChart"></div></div>
+            <div class="chart-card"><h3>All Sports Participated by Athletes</h3><div id="sportsPieChart"></div></div>
+            <div class="chart-card"><h3>All Achievements</h3><div id="achievementPieChart"></div></div>
+        </div>
+    </div>
+
+    <div id="participantModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6);">
+        <div class="modal-content">
+            <span onclick="document.getElementById('participantModal').style.display='none'" style="float:right; cursor:pointer; font-size:24px;">&times;</span>
+            <h2 id="modalHeader" style="color:var(--header-color)">List</h2>
+            <div style="max-height:400px; overflow-y:auto;">
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="text-align:left; border-bottom:2px solid #1a237e;">
+                            <th style="padding:10px;">Name of Student</th>
+                            <th style="padding:10px;">Department</th>
+                            <th style="padding:10px;">Sport</th>
+                        </tr>
+                    </thead>
+                    <tbody id="participantTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadData() {
+            const res = await fetch('/api/inter_department_data');
+            const data = await res.json();
+
+            document.getElementById('kpiTotal').innerText = data.kpiMetrics.totalAchievements;
+            document.getElementById('kpiPoints').innerText = data.kpiMetrics.totalPoints;
+            document.getElementById('kpiSports').innerText = data.kpiMetrics.uniqueSports;
+
+            const barConfig = (labels, seriesData) => ({
+                chart: { type: 'bar', height: 350, toolbar: { show: true } },
+                plotOptions: { bar: { horizontal: true, distributed: true } },
+                series: [{ data: seriesData }],
+                xaxis: { categories: labels },
+                legend: { show: false }
+            });
+
+            const pieConfig = (labels, seriesData) => ({
+                chart: { type: 'pie', height: 400, toolbar: { show: true } },
+                series: seriesData,
+                labels: labels,
+                legend: { position: 'bottom' }
+            });
+
+            new ApexCharts(document.querySelector("#achievementLevelChart"), barConfig(data.achievementLevel.map(i => i.Type), data.achievementLevel.map(i => i.Count))).render();
+            new ApexCharts(document.querySelector("#schoolAchievementsChart"), barConfig(data.schoolAchievements.map(i => i.School), data.schoolAchievements.map(i => i.Achievements))).render();
+            new ApexCharts(document.querySelector("#sportsPieChart"), pieConfig(data.sportsParticipated.labels, data.sportsParticipated.series)).render();
+            new ApexCharts(document.querySelector("#achievementPieChart"), pieConfig(data.achievementLevel.map(i => i.Type), data.achievementLevel.map(i => i.Count))).render();
+        }
+
+        async function showParticipantList(type) {
+            const modal = document.getElementById('participantModal');
+            const tableBody = document.getElementById('participantTableBody');
+            const header = document.getElementById('modalHeader');
+            
+            const titles = { '1st': '1st Prize Winners', '2nd': '2nd Prize Winners', '3rd': '3rd Prize Winners', 'all': 'Full Participant List' };
+            header.innerText = titles[type];
+            tableBody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px;'>Loading...</td></tr>";
+            modal.style.display = 'block';
+
+            try {
+                const response = await fetch(`/api/inter_dept_participants?type=${type}`);
+                const students = await response.json();
+                
+                tableBody.innerHTML = "";
+                if (students.length === 0) {
+                    tableBody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px;'>No records found.</td></tr>";
+                    return;
+                }
+
+                students.forEach(s => {
+                    const row = `
+                        <tr style="border-bottom:1px solid #eee;">
+                            <td style="padding:10px; white-space:pre-line;">${s['NAME OF STUDENT']}</td>
+                            <td style="padding:10px;">${s['School']}</td>
+                            <td style="padding:10px;">${s['Sport']}</td>
+                        </tr>`;
+                    tableBody.insertAdjacentHTML('beforeend', row);
+                });
+            } catch (e) {
+                tableBody.innerHTML = "<tr><td colspan='3' style='text-align:center; color:red;'>Error loading data.</td></tr>";
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>
