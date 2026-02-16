@@ -15,98 +15,72 @@
 
         body { font-family: 'Poppins', sans-serif; background: var(--bg-color); color: var(--text-color); padding: 20px; margin: 0; }
         
-        .container { max-width: 1400px; margin: auto; display: flex; flex-direction: column; gap: 20px; }
+        .container { max-width: 1450px; margin: auto; display: flex; flex-direction: column; gap: 20px; }
 
         .header-row { 
-            background: var(--card-color); 
-            padding: 15px 20px; 
-            border-radius: 10px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
+            background: var(--card-color); padding: 15px 20px; border-radius: 10px; 
+            display: flex; justify-content: space-between; align-items: center; 
             box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
         }
 
         .back-btn { 
-            text-decoration: none; 
-            color: var(--header-color); 
-            font-weight: 600; 
-            border: 1px solid var(--header-color); 
-            padding: 8px 15px; 
-            border-radius: 20px; 
-            transition: 0.3s;
-            font-size: 14px;
+            text-decoration: none; color: var(--header-color); font-weight: 600; 
+            border: 1px solid var(--header-color); padding: 8px 15px; 
+            border-radius: 20px; transition: 0.3s; font-size: 14px;
         }
         .back-btn:hover { background: var(--header-color); color: white; }
 
         .top-grid { 
-            display: grid; 
-            grid-template-columns: repeat(2, 1fr) 320px; 
-            gap: 20px; 
+            display: grid; grid-template-columns: repeat(2, 1fr) 320px; gap: 20px; 
         }
 
         .kpi-card { 
-            background: var(--card-color); 
-            padding: 20px; 
-            border-radius: 10px; 
-            text-align: center; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            background: var(--card-color); padding: 20px; border-radius: 10px; 
+            text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            display: flex; flex-direction: column; justify-content: center;
         }
 
-        .kpi-card h3 { font-size: 1rem; margin: 0 0 10px 0; color: var(--text-color); opacity: 0.8; }
+        .kpi-card h3 { font-size: 0.9rem; margin: 0 0 10px 0; color: var(--text-color); opacity: 0.8; }
         .kpi-card h2 { font-size: 2.2rem; font-weight: 700; color: var(--header-color); margin: 0; }
 
-        .sidebar-card { padding: 15px !important; text-align: center; }
-        .sidebar-card h3 { font-size: 1rem; margin-bottom: 12px; color: var(--header-color); font-weight: 600; }
+        .sidebar-card { padding: 15px !important; text-align: center; border: 1px solid var(--header-color); }
+        .sidebar-card h3 { font-size: 0.95rem; margin-bottom: 12px; color: var(--header-color); font-weight: 600; }
         
         .sport-btn-container { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 8px; 
-            max-height: 150px; 
-            overflow-y: auto; 
-            padding-right: 5px;
+            display: flex; flex-direction: column; gap: 8px; 
+            max-height: 160px; overflow-y: auto; padding-right: 5px;
         }
 
         .sport-btn {
-            background: transparent;
-            color: var(--header-color);
-            font-weight: 600;
-            border: 1px solid var(--header-color);
-            padding: 6px 10px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: 0.3s;
-            font-family: 'Poppins', sans-serif;
+            background: transparent; color: var(--header-color); font-weight: 600; 
+            border: 1px solid var(--header-color); padding: 6px 10px; 
+            border-radius: 20px; cursor: pointer; font-size: 0.8rem; 
+            transition: 0.3s; font-family: 'Poppins';
         }
         .sport-btn:hover { background: var(--header-color); color: white; }
 
-        .charts-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); 
-            gap: 20px; 
-        }
-
-        .chart-card { 
-            background: var(--card-color); 
-            padding: 20px; 
-            border-radius: 10px; 
-            min-height: 380px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
-        }
-
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
+        .chart-card { background: var(--card-color); padding: 20px; border-radius: 10px; min-height: 380px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         h3 { text-align: center; color: var(--header-color); margin-bottom: 15px; }
 
-        #winnerModal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:30px; border-radius:15px; box-shadow:0 0 20px rgba(0,0,0,0.2); z-index:100; width:85%; max-width:800px; max-height:80vh; overflow-y:auto; }
-        .overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:99; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th { text-align: left; border-bottom: 2px solid var(--header-color); padding: 10px; background: #f8f9fa; }
-        td { padding: 10px; border-bottom: 1px solid #eee; }
+        /* --- CENTERED SCROLLABLE LIST BELOW GRAPHS --- */
+        .list-section { margin-top: 30px; text-align: center; display: none; padding-bottom: 40px; }
+        .table-wrapper { 
+            margin: 0 auto; max-width: 1200px; background: white; 
+            border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+            overflow-y: auto; max-height: 500px; border: 1px solid #eee;
+        }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: var(--header-color); color: white; padding: 12px; position: sticky; top: 0; z-index: 10; font-size: 14px; }
+        td { padding: 12px; border-bottom: 1px solid #eee; color: #444; font-size: 13.5px; }
+        tr:hover { background-color: #f8f9fa; }
+
+        .excel-btn { 
+            background-color: #28a745; color: white; border: none; 
+            padding: 12px 30px; border-radius: 25px; cursor: pointer; 
+            font-size: 0.9rem; font-weight: 600; margin-top: 20px; transition: 0.3s; 
+        }
+        .excel-btn:hover { background-color: #218838; transform: translateY(-2px); }
     </style>
 </head>
 <body>
@@ -135,22 +109,29 @@
         <div class="chart-card"><h3>Department-wise Participants</h3><div id="deptBar"></div></div>
         <div class="chart-card"><h3>Gender Distribution</h3><div id="genderDonut"></div></div>
     </div>
-</div>
 
-<div class="overlay" onclick="closeModal()"></div>
-<div id="winnerModal">
-    <h2 id="modalTitle" style="color: var(--header-color); margin-top:0;">Winners</h2>
-    <table>
-        <thead>
-            <tr><th>Name</th><th>Department</th><th>Gender</th><th>Event</th></tr>
-        </thead>
-        <tbody id="winnerTableBody"></tbody>
-    </table>
-    <button class="back-btn" onclick="closeModal()" style="margin-top:20px; cursor: pointer; border: none;">Close</button>
+    <div class="list-section" id="listSection">
+        <h2 id="listTitle" style="color: var(--header-color); margin-bottom: 15px;"></h2>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Department</th>
+                        <th>Gender</th>
+                        <th>Event</th>
+                    </tr>
+                </thead>
+                <tbody id="winnerTableBody"></tbody>
+            </table>
+        </div>
+        <button id="downloadBtn" class="excel-btn" onclick="downloadExcel()">Download Winners List (Excel)</button>
+    </div>
 </div>
 
 <script>
     let charts = {};
+    let currentWinnersData = [];
 
     async function loadStaffData() {
         try {
@@ -170,6 +151,7 @@
                 btnContainer.appendChild(btn);
             });
 
+            // Keep existing graph configurations
             charts.gender = new ApexCharts(document.querySelector("#genderDonut"), {
                 series: data.gender.series,
                 labels: data.gender.labels,
@@ -197,28 +179,40 @@
     }
 
     async function showWinners(sport) {
+        const listSection = document.getElementById('listSection');
         const tableBody = document.getElementById('winnerTableBody');
-        tableBody.innerHTML = "<tr><td colspan='4' style='text-align:center;'>Loading...</td></tr>";
-        document.getElementById('modalTitle').innerText = `${sport} Winners`;
-        document.querySelector('#winnerModal').style.display = 'block';
-        document.querySelector('.overlay').style.display = 'block';
-
+        
         try {
             const res = await fetch(`/api/winners_by_sport?sport=${encodeURIComponent(sport)}`);
-            const winners = await res.json();
-            tableBody.innerHTML = winners.length > 0 ? winners.map(w => `
+            currentWinnersData = await res.json();
+            
+            tableBody.innerHTML = currentWinnersData.length > 0 ? currentWinnersData.map(w => `
                 <tr>
                     <td><strong>${w.Name}</strong></td>
                     <td>${w.Department}</td>
                     <td>${w.Gender || '-'}</td>
                     <td>${w.Event || '-'}</td>
                 </tr>`).join('') : "<tr><td colspan='4' style='text-align:center;'>No winners found.</td></tr>";
-        } catch (err) { tableBody.innerHTML = "<tr><td colspan='4' style='text-align:center;'>Error loading data.</td></tr>"; }
+            
+            document.getElementById('listTitle').innerText = `${sport} Winners List`;
+            listSection.style.display = 'block';
+            
+            // Scroll to the list
+            listSection.scrollIntoView({ behavior: 'smooth' });
+        } catch (err) { console.error("Error:", err); }
     }
 
-    function closeModal() {
-        document.querySelector('#winnerModal').style.display = 'none';
-        document.querySelector('.overlay').style.display = 'none';
+    function downloadExcel() {
+        if (!currentWinnersData.length) return;
+        let csvContent = "\uFEFFName,Department,Gender,Event\n";
+        currentWinnersData.forEach(row => {
+            csvContent += `"${row.Name}","${row.Department}","${row.Gender || ''}","${row.Event || ''}"\n`;
+        });
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `${document.getElementById('listTitle').innerText.replace(/ /g, '_')}.csv`;
+        link.click();
     }
 
     loadStaffData();

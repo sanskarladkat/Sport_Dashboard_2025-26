@@ -13,9 +13,8 @@
 
     <style>
         :root { --bg-color: #f4f7fc; --card-color: #ffffff; --text-color: #333333; --header-color: #1a237e; --shadow-color: rgba(0, 0, 0, 0.05); --border-color: #e0e0e0; }
-        body.dark-theme { --bg-color: #121212; --card-color: #1e1e1e; --text-color: #e0e0e0; --header-color: #bb86fc; --shadow-color: rgba(255, 255, 255, 0.05); --border-color: #333; }
-        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; transition: background-color 0.3s, color 0.3s; }
-        .container { max-width: 1400px; margin: auto; display: flex; flex-direction: column; gap: 20px; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; transition: 0.3s; }
+        .container { max-width: 1450px; margin: auto; display: flex; flex-direction: column; gap: 20px; }
         
         header { 
             background: var(--card-color); padding: 15px 20px; border-radius: 10px; 
@@ -23,34 +22,36 @@
             justify-content: space-between; align-items: center; 
         }
         header h1 { margin: 0; color: var(--header-color); font-weight: 700; font-size: 1.5rem; }
-        .back-btn { background-color: var(--header-color); color: white; text-decoration: none; padding: 8px 16px; border-radius: 5px; font-size: 14px; transition: background 0.3s; margin-right: 10px; }
+        .back-btn { text-decoration: none; color: var(--header-color); font-weight: 600; border: 1px solid var(--header-color); padding: 8px 15px; border-radius: 20px; transition: 0.3s; font-size: 14px; }
+        .back-btn:hover { background: var(--header-color); color: white; }
 
         .top-row-grid { display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
         .kpi-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
         .kpi-card { background: var(--card-color); padding: 15px; border-radius: 10px; box-shadow: 0 4px 12px var(--shadow-color); text-align: center; display: flex; flex-direction: column; justify-content: center; }
         .kpi-card .value { font-size: 1.8em; font-weight: 700; color: var(--header-color); margin: 0; }
-        .kpi-card .label { font-size: 0.8em; color: var(--text-color); opacity: 0.7; margin-top: 2px; line-height: 1.2; }
+        .kpi-card .label { font-size: 0.85em; opacity: 0.7; margin-top: 5px; }
 
         .details-card { background: var(--card-color); padding: 15px; border-radius: 10px; box-shadow: 0 4px 12px var(--shadow-color); border: 1px solid var(--header-color); text-align: center; }
         .details-card h3 { font-size: 0.95rem; margin: 0 0 10px 0; color: var(--header-color); font-weight: 600; }
-        .school-select { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid var(--border-color); font-family: 'Poppins'; font-size: 13px; margin-bottom: 10px; }
-        .download-btn { background-color: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 600; display: none; width: 100%; transition: 0.3s; }
-        .download-btn:hover { background-color: #218838; }
+        .school-select { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid var(--border-color); font-family: 'Poppins'; font-size: 13px; cursor: pointer; }
 
         .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px; }
         .chart-card { background: var(--card-color); padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px var(--shadow-color); min-height: 400px; }
-        .chart-card h3 { text-align: center; color: var(--text-color); font-weight: 600; margin-bottom: 20px; }
+        h3 { text-align: center; color: var(--text-color); font-weight: 600; margin-bottom: 20px; }
 
-        .list-section { margin-top: 30px; text-align: center; display: none; }
+        .list-section { margin-top: 30px; text-align: center; display: none; padding-bottom: 40px; }
         .table-wrapper { 
-            margin: 0 auto; max-width: 1100px; background: white; 
+            margin: 0 auto; max-width: 1200px; background: white; 
             border-radius: 10px; box-shadow: 0 4px 12px var(--shadow-color); 
             overflow-y: auto; max-height: 500px; border: 1px solid var(--border-color);
         }
         table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { background: var(--header-color); color: white; padding: 12px; position: sticky; top: 0; z-index: 10; }
-        td { padding: 12px; border-bottom: 1px solid var(--border-color); color: #444; font-size: 14px; }
-        tr:hover { background-color: #f8f9fa; }
+        th { background: var(--header-color); color: white; padding: 12px; position: sticky; top: 0; z-index: 10; font-size: 14px; }
+        td { padding: 12px; border-bottom: 1px solid var(--border-color); color: #444; font-size: 13px; }
+        tr:hover { background: #f8f9fa; }
+
+        .excel-btn { background-color: #28a745; color: white; border: none; padding: 12px 25px; border-radius: 25px; cursor: pointer; font-size: 0.9rem; font-weight: 600; margin-top: 20px; transition: 0.3s; }
+        .excel-btn:hover { background-color: #218838; transform: translateY(-2px); }
 
         @media (max-width: 1024px) { .top-row-grid { grid-template-columns: 1fr; } }
     </style>
@@ -68,49 +69,49 @@
             <div class="kpi-container">
                 <div class="kpi-card"><p class="value" id="totalAchievementsValue">0</p><p class="label">Total Athletes Achievements</p></div>
                 <div class="kpi-card"><p class="value" id="totalPointsValue">0</p><p class="label">Total Points</p></div>
-                <div class="kpi-card"><p class="value" id="uniqueSportsValue">0</p><p class="label">Participated Sports Activity</p></div>
+                <div class="kpi-card"><p class="value" id="uniqueSportsValue">0</p><p class="label">Participated Sports</p></div>
             </div>
 
             <div class="details-card">
                 <h3>Participants Details</h3>
                 <select id="schoolDropdown" class="school-select" onchange="loadParticipantsBySchool()">
                     <option value="">Select School Name...</option>
-                </select>
-                <button id="downloadListBtn" class="download-btn" onclick="downloadExcel()">Download List (Excel)</button>
+                    <option value="all">All Participants List</option> </select>
             </div>
         </div>
         
         <div class="charts-grid">
             <div class="chart-card"><h3>Achievements Level</h3><div id="achievementTypesChart"></div></div>
             <div class="chart-card"><h3>Gender Distribution of Athletes</h3><div id="genderDistributionChart"></div></div>
-            <div class="chart-card"><h3>All Sports Participated by Athletes</h3><div id="sportsPieChart"></div></div>
-            <div class="chart-card"><h3>All Achievements</h3><div id="achievementPieChart"></div></div>
+            <div class="chart-card"><h3>Sports Participated by Athletes</h3><div id="sportsPieChart"></div></div>
+            <div class="chart-card"><h3>All Achievements Distribution</h3><div id="achievementPieChart"></div></div>
             <div class="chart-card"><h3>School-wise Achievements</h3><div id="schoolParticipationChart"></div></div>
             <div class="chart-card"><h3>Top 6 Sports</h3><div id="popularSportsChart"></div></div>
             <div class="chart-card" style="grid-column: 1 / -1;"><h3>Gender-wise Participation in Sports</h3><div id="sportByGenderChart"></div></div>
         </div>
 
         <div class="list-section" id="listSection">
-            <h2 id="listTitle" style="color: var(--header-color); margin-bottom: 15px;"></h2>
+            <h2 id="listTitle" style="color: var(--header-color); margin-bottom: 20px;"></h2>
             <div class="table-wrapper">
                 <table>
                     <thead>
                         <tr>
                             <th>Student Name</th>
-                            <th>Department</th>
-                            <th>Achievement</th>
-                            <th>Sport</th>
+                            <th>School Name</th>
+                            <th>Achievement Type</th>
+                            <th>Sports</th>
                         </tr>
                     </thead>
                     <tbody id="participantTableBody"></tbody>
                 </table>
             </div>
+            <button id="downloadExcelBtn" class="excel-btn" onclick="downloadExcel()">Download Excel</button>
         </div>
     </div>
 
     <script>
         let charts = {};
-        let currentSchoolData = [];
+        let currentListData = [];
 
         async function fetchData() {
             try {
@@ -122,65 +123,59 @@
                 document.getElementById('uniqueSportsValue').innerText = data.kpiMetrics.uniqueSports;
 
                 const dropdown = document.getElementById('schoolDropdown');
-                if (dropdown.options.length <= 1) {
-                    data.schoolParticipation.forEach(item => {
-                        const opt = document.createElement('option');
-                        opt.value = item.School;
-                        opt.innerHTML = item.School;
-                        dropdown.appendChild(opt);
-                    });
-                }
+                // Ensure unique school names populate correctly
+                data.schoolParticipation.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item.School;
+                    opt.innerHTML = item.School;
+                    dropdown.appendChild(opt);
+                });
+                
                 renderDashboard(data);
-            } catch (error) { console.error("Error:", error); }
+            } catch (error) { console.error("Error fetching data:", error); }
         }
 
         function renderDashboard(data) {
             Object.values(charts).forEach(c => { if(c) c.destroy(); });
             charts = {};
-            const mode = 'light';
 
-            const barOptions = (id, labels, series, horizontal = true) => ({
+            const barOptions = (labels, series, horizontal = true) => ({
                 series: [{ name: 'Count', data: series }],
                 chart: { type: 'bar', height: 350, toolbar: { show: true } },
                 plotOptions: { bar: { horizontal: horizontal, distributed: true, barHeight: '70%' } },
                 xaxis: { categories: labels },
-                theme: { mode },
                 legend: { show: false }
             });
 
-            charts.achLevel = new ApexCharts(document.querySelector("#achievementTypesChart"), barOptions("achLevel", data.achievementTypesBar.map(i => i.Type), data.achievementTypesBar.map(i => i.Count))).render();
-            charts.schoolAch = new ApexCharts(document.querySelector("#schoolParticipationChart"), barOptions("schoolAch", data.schoolParticipation.map(i => i.School), data.schoolParticipation.map(i => i.Achievements))).render();
-            charts.popSports = new ApexCharts(document.querySelector("#popularSportsChart"), barOptions("popSports", data.popularSportsBar.map(i => i.Sport), data.popularSportsBar.map(i => i.Participants), true)).render();
+            charts.achLevel = new ApexCharts(document.querySelector("#achievementTypesChart"), barOptions(data.achievementTypesBar.map(i => i.Type), data.achievementTypesBar.map(i => i.Count))).render();
+            charts.schoolAch = new ApexCharts(document.querySelector("#schoolParticipationChart"), barOptions(data.schoolParticipation.map(i => i.School), data.schoolParticipation.map(i => i.Achievements))).render();
+            charts.popSports = new ApexCharts(document.querySelector("#popularSportsChart"), barOptions(data.popularSportsBar.map(i => i.Sport), data.popularSportsBar.map(i => i.Participants), true)).render();
 
             charts.gender = new ApexCharts(document.querySelector("#genderDistributionChart"), {
                 series: data.genderDistribution.series,
                 labels: data.genderDistribution.labels,
                 chart: { type: 'donut', height: 350 },
-                colors: ['#3366FF', '#00E396'],
-                theme: { mode }
+                colors: ['#3366FF', '#00E396']
             }).render();
 
             charts.sportsPie = new ApexCharts(document.querySelector("#sportsPieChart"), {
                 series: data.sportsPie.series,
                 labels: data.sportsPie.labels,
-                chart: { type: 'pie', height: 400 },
-                theme: { mode }
+                chart: { type: 'pie', height: 400 }
             }).render();
 
             charts.achPie = new ApexCharts(document.querySelector("#achievementPieChart"), {
                 series: data.achievementTypesPie.series,
                 labels: data.achievementTypesPie.labels,
                 chart: { type: 'pie', height: 600, toolbar: { show: true } },
-                legend: { position: 'bottom' },
-                theme: { mode }
+                legend: { position: 'bottom' }
             }).render();
 
             charts.genderSport = new ApexCharts(document.querySelector("#sportByGenderChart"), {
                 series: data.sportByGender.series,
                 chart: { type: 'bar', height: 500, stacked: true },
                 plotOptions: { bar: { horizontal: true } },
-                xaxis: { categories: data.sportByGender.categories },
-                theme: { mode }
+                xaxis: { categories: data.sportByGender.categories }
             }).render();
         }
 
@@ -192,32 +187,32 @@
 
             try {
                 const response = await fetch(`/api/participants_by_school?school=${encodeURIComponent(schoolName)}`);
-                currentSchoolData = await response.json();
-                tableBody.innerHTML = currentSchoolData.map(item => `
+                currentListData = await response.json();
+                
+                tableBody.innerHTML = currentListData.map(item => `
                     <tr>
-                        <td style="white-space: pre-line;">${item['NAME OF STUDENT']}</td>
+                        <td style="white-space: pre-line; font-weight: 600;">${item['NAME OF STUDENT']}</td>
                         <td>${item['School']}</td>
                         <td>${item['RESULTS']}</td>
                         <td>${item['Sport']}</td>
                     </tr>`).join('');
-                document.getElementById('listTitle').innerText = `Participants - ${schoolName}`;
+
+                document.getElementById('listTitle').innerText = schoolName === 'all' ? 'Full Participants List' : `Participants - ${schoolName}`;
                 listSection.style.display = 'block';
-                document.getElementById('downloadListBtn').style.display = 'block';
                 listSection.scrollIntoView({ behavior: 'smooth' });
-            } catch (err) { console.error("Error:", err); }
+            } catch (err) { console.error("Error loading list:", err); }
         }
 
         function downloadExcel() {
-            let csvContent = "\uFEFF";
-            csvContent += "Student Name,Department,Achievement,Sport\n";
-            currentSchoolData.forEach(row => {
+            let csvContent = "\uFEFFStudent Name,Department,Event,Achievement,Sport\n";
+            currentListData.forEach(row => {
                 const name = `"${row['NAME OF STUDENT'].replace(/\n/g, ' ')}"`;
                 csvContent += `${name},"${row['School']}","${row['RESULTS']}","${row['Sport']}"\n`;
             });
             const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.download = `Participants_${document.getElementById('schoolDropdown').value}.csv`;
+            link.download = `${document.getElementById('listTitle').innerText.replace(/ /g, '_')}.csv`;
             link.click();
         }
 

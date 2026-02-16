@@ -503,7 +503,7 @@ def get_inter_dept_participants():
         else:
             filtered_df = df
 
-        student_list = filtered_df[['NAME OF STUDENT', 'School', 'Sport', 'RESULTS']]
+        student_list = filtered_df[['NAME OF STUDENT', 'School', 'Sport', 'RESULTS', 'Event']]
         
         return jsonify(student_list.to_dict(orient='records'))
     except Exception as e:
