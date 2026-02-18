@@ -17,7 +17,7 @@
         .back-btn:hover { background: var(--header-color); color: white; }
 
         .top-row-grid { display: grid; grid-template-columns: 1fr 320px; gap: 20px; }
-        .kpi-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .kpi-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
         .kpi-card { background: var(--card-color); padding: 15px; border-radius: 10px; box-shadow: 0 4px 12px var(--shadow-color); text-align: center; display: flex; flex-direction: column; justify-content: center; }
         .kpi-card .value { font-size: 2em; font-weight: 700; color: var(--header-color); margin: 0; }
         .kpi-card .label { font-size: 0.85em; opacity: 0.7; margin-top: 5px; }
@@ -28,16 +28,34 @@
         .side-btn { background: transparent; color: var(--header-color); font-weight: 600; border: 1px solid var(--header-color); padding: 8px; border-radius: 20px; cursor: pointer; font-size: 0.75rem; transition: 0.3s; font-family: 'Poppins'; }
         .side-btn:hover { background: var(--header-color); color: white; }
 
-        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px; }
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .chart-card { background: var(--card-color); padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px var(--shadow-color); min-height: 380px; }
+        .full-width-chart { grid-column: span 2; }
+        
         h3 { text-align: center; color: var(--header-color); margin-bottom: 15px; }
 
-        .bottom-full-card { grid-column: 1 / -1; display: grid; grid-template-columns: 450px 1fr; gap: 25px; align-items: start; }
-        .list-container { display: flex; flex-direction: column; height: 100%; }
-        .table-wrapper { 
-            flex-grow: 1; overflow-y: auto; max-height: 400px; 
-            border: 1px solid var(--border-color); border-radius: 10px; 
+        /* Rank Badge Styling */
+        .rank-badge {
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-block;
+            min-width: 90px;
+            text-align: center;
+            color: white;
+            background-color: #7f8c8d; 
         }
+        .rank-winner { background-color: #FFD700; color: #333; } 
+        .rank-1st-runner { background-color: #C0C0C0; color: #333; } 
+        .rank-2nd-runner { background-color: #CD7F32; color: white; } 
+
+        .toggle-container { background: #f0f2f5; padding: 4px; border-radius: 10px; display: inline-flex; gap: 4px; margin-bottom: 10px; }
+        .toggle-btn { border: none; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-family: 'Poppins'; font-size: 0.8rem; font-weight: 600; transition: 0.3s; background: transparent; color: #666; }
+        .toggle-btn.active { background: var(--header-color); color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        .bottom-full-card { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 15px; }
+        .table-wrapper { flex-grow: 1; overflow-y: auto; max-height: 450px; border: 1px solid var(--border-color); border-radius: 10px; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th { background: var(--header-color); color: white; padding: 12px; position: sticky; top: 0; z-index: 10; font-size: 13px; }
         td { padding: 10px; border-bottom: 1px solid var(--border-color); color: #444; font-size: 13px; }
@@ -45,7 +63,11 @@
 
         .excel-btn { background-color: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-size: 0.9rem; font-weight: 600; margin-top: 15px; align-self: flex-end; display: none; }
 
-        @media (max-width: 1024px) { .top-row-grid, .bottom-full-card { grid-template-columns: 1fr; } .bottom-full-card { display: flex; flex-direction: column; } }
+        @media (max-width: 1024px) { 
+            .top-row-grid, .bottom-full-card, .charts-grid { grid-template-columns: 1fr; } 
+            .kpi-container { grid-template-columns: repeat(2, 1fr); } 
+            .full-width-chart { grid-column: span 1; }
+        }
     </style>
 </head>
 <body>
@@ -59,6 +81,7 @@
 
         <div class="top-row-grid">
             <div class="kpi-container">
+                <div class="kpi-card"><p class="value" id="kpiParticipants">0</p><p class="label">Total Participants</p></div>
                 <div class="kpi-card"><p class="value" id="kpiTotal">0</p><p class="label">Total Achievements</p></div>
                 <div class="kpi-card"><p class="value" id="kpiPoints">0</p><p class="label">Total Points</p></div>
                 <div class="kpi-card"><p class="value" id="kpiSports">0</p><p class="label">Participated Sports</p></div>
@@ -67,98 +90,142 @@
             <div class="sidebar-card">
                 <h3>Winners Details</h3>
                 <div class="vertical-btns">
-                    <button class="side-btn" onclick="showParticipantList('1st')">1st Price</button>
-                    <button class="side-btn" onclick="showParticipantList('2nd')">2nd Price</button>
-                    <button class="side-btn" onclick="showParticipantList('3rd')">3rd Price</button>
-                    <button class="side-btn" onclick="showParticipantList('all')">Full List</button>
+                    <button class="side-btn" onclick="showParticipantList('1st')">Winner</button>
+                    <button class="side-btn" onclick="showParticipantList('2nd')">1st Runner Up</button>
+                    <button class="side-btn" onclick="showParticipantList('3rd')">2nd Runner Up</button>
+                    <button class="side-btn" onclick="showParticipantList('all')">Full Participants List</button>
                 </div>
             </div>
         </div>
         
         <div class="charts-grid">
-            <div class="chart-card"><h3>Achievements Level</h3><div id="achievementLevelChart"></div></div>
-            <div class="chart-card"><h3>School-wise Participation</h3><div id="schoolAchievementsChart"></div></div>
-            <div class="chart-card"><h3>Sports Participated by Athletes</h3><div id="sportsPieChart"></div></div>
-            
-            <div class="chart-card bottom-full-card">
-                <div style="border-right: 1px solid #eee; padding-right: 15px;">
-                    <h3>All Achievements</h3>
-                    <div id="achievementPieChart"></div>
-                </div>
-                <div class="list-container">
-                    <h3 id="listTitle" style="text-align: left;">Participants Details</h3>
-                    <div class="table-wrapper">
-                        <table>
-                            <thead>
-                                <tr><th>Student Name</th><th>Name of School</th><th>Event</th><th>Sport</th></tr>
-                            </thead>
-                            <tbody id="participantTableBody">
-                                <tr><td colspan="4" style="text-align:center; padding:50px; color:#999;">Click a button in the sidebar to load details.</td></tr>
-                            </tbody>
-                        </table>
+            <div class="chart-card"><h3>School-wise Achievements</h3><div id="schoolAchievementsChart"></div></div>
+            <div class="chart-card"><h3>School-wise Total Points</h3><div id="schoolPointsChart"></div></div>
+
+            <div class="chart-card full-width-chart">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                   <h3 style="margin:0; font-size: 1.1rem; text-align: center;">Sports Participated by Athletes</h3>
+                    <div class="toggle-container">
+                        <button onclick="updateSportsView('chart')" id="btnSportsChart" class="toggle-btn active">Chart</button>
+                        <button onclick="updateSportsView('list')" id="btnSportsList" class="toggle-btn">List</button>
                     </div>
-                    <button id="excelBtn" class="excel-btn" onclick="downloadExcel()">Download Excel</button>
                 </div>
+                <div id="sportsViewContainer"></div>
             </div>
+        </div>
+
+        <div class="chart-card bottom-full-card">
+            <h3 id="listTitle" style="text-align: center;">Participants Details</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>School Name</th>
+                            <th>Event</th>
+                            <th>Sport</th>
+                            <th>Result</th>
+                        </tr>
+                    </thead>
+                    <tbody id="participantTableBody">
+                        <tr><td colspan="5" style="text-align:center; padding:50px; color:#999;">Select a filter from the sidebar to load details.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <button id="excelBtn" class="excel-btn" onclick="downloadExcel()">Download Excel</button>
         </div>
     </div>
 
     <script>
         let currentListData = [];
+        let sportsDataGlobal = null;
+        let sportsChartInstance = null;
 
         async function loadData() {
             const res = await fetch('/api/inter_department_data');
             const data = await res.json();
+            sportsDataGlobal = data.sportsParticipated;
 
             document.getElementById('kpiTotal').innerText = data.kpiMetrics.totalAchievements;
             document.getElementById('kpiPoints').innerText = data.kpiMetrics.totalPoints;
             document.getElementById('kpiSports').innerText = data.kpiMetrics.uniqueSports;
+            document.getElementById('kpiParticipants').innerText = data.kpiMetrics.totalParticipants;
 
             const barOptions = (labels, seriesData) => ({
                 chart: { type: 'bar', height: 320, toolbar: { show: true } },
-                plotOptions: { bar: { horizontal: true, distributed: true, barHeight: '75%' } },
-                series: [{ data: seriesData }],
+                plotOptions: { bar: { horizontal: true, distributed: true, barHeight: '70%' } },
+                series: [{ name: 'Value', data: seriesData }],
                 xaxis: { categories: labels },
-                legend: { show: false }
+                yaxis: {
+                    labels: {
+                        show: true,
+                        maxWidth: 300, 
+                        style: { fontSize: '11px', fontFamily: 'Poppins, sans-serif' }
+                    }
+                },
+                legend: { show: false },
+                grid: { padding: { left: 20 } }
             });
 
-            const pieOptions = (labels, seriesData) => ({
-                chart: { type: 'pie', height: 350, toolbar: { show: true } },
-                series: seriesData,
-                labels: labels,
-                legend: { position: 'bottom', fontSize: '11px' }
-            });
-
-            new ApexCharts(document.querySelector("#achievementLevelChart"), barOptions(data.achievementLevel.map(i => i.Type), data.achievementLevel.map(i => i.Count))).render();
             new ApexCharts(document.querySelector("#schoolAchievementsChart"), barOptions(data.schoolAchievements.map(i => i.School), data.schoolAchievements.map(i => i.Achievements))).render();
-            new ApexCharts(document.querySelector("#sportsPieChart"), pieOptions(data.sportsParticipated.labels, data.sportsParticipated.series)).render();
-            new ApexCharts(document.querySelector("#achievementPieChart"), pieOptions(data.allAchievements.labels, data.allAchievements.series)).render();
+            new ApexCharts(document.querySelector("#schoolPointsChart"), barOptions(data.schoolPoints.map(i => i.School), data.schoolPoints.map(i => i.Points))).render();
+            
+            updateSportsView('chart');
+        }
+
+        function updateSportsView(type) {
+            const btnChart = document.getElementById('btnSportsChart');
+            const btnList = document.getElementById('btnSportsList');
+            type === 'chart' ? (btnChart.classList.add('active'), btnList.classList.remove('active')) : (btnList.classList.add('active'), btnChart.classList.remove('active'));
+            renderSportsChart(type);
+        }
+
+        function renderSportsChart(type) {
+            if (sportsChartInstance) { sportsChartInstance.destroy(); }
+            let options;
+            if (type === 'chart') {
+                options = { chart: { type: 'pie', height: 400, toolbar: { show: true } }, series: sportsDataGlobal.series, labels: sportsDataGlobal.labels, legend: { position: 'bottom', fontSize: '12px' } };
+            } else {
+                options = { chart: { type: 'bar', height: 400, toolbar: { show: true } }, plotOptions: { bar: { horizontal: true, distributed: true, barHeight: '65%' } }, series: [{ name: 'Participants', data: sportsDataGlobal.series }], xaxis: { categories: sportsDataGlobal.labels }, legend: { show: false }, dataLabels: { enabled: true, style: { colors: ['#333'] } } };
+            }
+            sportsChartInstance = new ApexCharts(document.querySelector("#sportsViewContainer"), options);
+            sportsChartInstance.render();
         }
 
         async function showParticipantList(type) {
             const res = await fetch(`/api/inter_dept_participants?type=${type}`);
             currentListData = await res.json();
-            
             const tableBody = document.getElementById('participantTableBody');
-            const titles = { '1st': '1st Winners List', '2nd': '2nd Winners List', '3rd': '3rd Winners List', 'all': 'Full Participant List' };
+            const titles = { '1st': 'Winner List', '2nd': '1st Runner Up List', '3rd': '2nd Runner Up List', 'all': 'Full Participant List' };
             document.getElementById('listTitle').innerText = titles[type];
             
-            tableBody.innerHTML = currentListData.length ? currentListData.map(item => `
-                <tr>
-                    <td style="white-space: pre-line; font-weight: 600;">${item['NAME OF STUDENT']}</td>
-                    <td>${item['School']}</td>
-                    <td>${item['Event'] || '-'}</td>
-                    <td>${item['Sport']}</td>
-                </tr>`).join('') : '<tr><td colspan="4" style="text-align:center;">No data found.</td></tr>';
+            tableBody.innerHTML = currentListData.length ? currentListData.map(item => {
+                // Color Code logic
+                let badgeClass = "";
+                const rankText = (item['Rank'] || "").toLowerCase();
+                
+                if (rankText.includes("winner")) badgeClass = "rank-winner";
+                else if (rankText.includes("1st runner")) badgeClass = "rank-1st-runner";
+                else if (rankText.includes("2nd runner")) badgeClass = "rank-2nd-runner";
+
+                return `
+                    <tr>
+                        <td style="white-space: pre-line; font-weight: 600;">${item['NAME OF STUDENT']}</td>
+                        <td>${item['School']}</td>
+                        <td>${item['Event'] || '-'}</td>
+                        <td>${item['Sport']}</td>
+                        <td><span class="rank-badge ${badgeClass}">${item['Rank'] || '-'}</span></td>
+                    </tr>
+                `;
+            }).join('') : '<tr><td colspan="5" style="text-align:center;">No data found.</td></tr>';
             
             document.getElementById('excelBtn').style.display = 'block';
         }
 
         function downloadExcel() {
-            let csvContent = "\uFEFFStudent Name,Department,Event,Sport\n";
-            currentListData.forEach(row => {
-                const name = `"${row['NAME OF STUDENT'].replace(/\n/g, ' ')}"`;
-                csvContent += `${name},"${row['School']}","${row['Event'] || ''}","${row['Sport']}"\n`;
+            let csvContent = "\uFEFFStudent Name,Department,Event,Sport,Rank\n";
+            currentListData.forEach(row => { 
+                csvContent += `"${row['NAME OF STUDENT'].replace(/\n/g, ' ')}","${row['School']}","${row['Event'] || ''}","${row['Sport']}","${row['Rank'] || ''}"\n`; 
             });
             const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
             const link = document.createElement("a");

@@ -35,9 +35,19 @@
         .details-card h3 { font-size: 0.95rem; margin: 0 0 10px 0; color: var(--header-color); font-weight: 600; }
         .school-select { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid var(--border-color); font-family: 'Poppins'; font-size: 13px; cursor: pointer; }
 
-        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px; }
-        .chart-card { background: var(--card-color); padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px var(--shadow-color); min-height: 400px; }
+        /* Updated 6-column grid for perfect alignment */
+        .charts-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 20px; }
+        .chart-card { background: var(--card-color); padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px var(--shadow-color); min-height: 400px; position: relative; grid-column: span 2; }
+        
+        /* New Layout Classes */
+        .span-3-card { grid-column: span 3 !important; } /* Makes pies 50% each */
+        .full-width-card { grid-column: span 6 !important; }
+        
         h3 { text-align: center; color: var(--text-color); font-weight: 600; margin-bottom: 20px; }
+
+        .toggle-container { background: #f0f2f5; padding: 4px; border-radius: 10px; display: inline-flex; gap: 4px; margin-bottom: 10px; }
+        .toggle-btn { border: none; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-family: 'Poppins'; font-size: 0.8rem; font-weight: 600; transition: 0.3s; background: transparent; color: #666; }
+        .toggle-btn.active { background: var(--header-color); color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
         .list-section { margin-top: 30px; text-align: center; display: none; padding-bottom: 40px; }
         .table-wrapper { 
@@ -53,7 +63,10 @@
         .excel-btn { background-color: #28a745; color: white; border: none; padding: 12px 25px; border-radius: 25px; cursor: pointer; font-size: 0.9rem; font-weight: 600; margin-top: 20px; transition: 0.3s; }
         .excel-btn:hover { background-color: #218838; transform: translateY(-2px); }
 
-        @media (max-width: 1024px) { .top-row-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 1024px) { 
+            .top-row-grid, .charts-grid { grid-template-columns: 1fr; } 
+            .chart-card, .span-3-card, .full-width-card { grid-column: span 1 !important; }
+        }
     </style>
 </head>
 <body>
@@ -82,12 +95,29 @@
         
         <div class="charts-grid">
             <div class="chart-card"><h3>Achievements Level</h3><div id="achievementTypesChart"></div></div>
-            <div class="chart-card"><h3>Gender Distribution of Athletes</h3><div id="genderDistributionChart"></div></div>
-            <div class="chart-card"><h3>Sports Participated by Athletes</h3><div id="sportsPieChart"></div></div>
-            <div class="chart-card"><h3>All Achievements Distribution</h3><div id="achievementPieChart"></div></div>
             <div class="chart-card"><h3>School-wise Achievements</h3><div id="schoolParticipationChart"></div></div>
-            <div class="chart-card"><h3>Top 6 Sports</h3><div id="popularSportsChart"></div></div>
-            <div class="chart-card" style="grid-column: 1 / -1;"><h3>Gender-wise Participation in Sports</h3><div id="sportByGenderChart"></div></div>
+            <div class="chart-card"><h3>Gender Distribution of Athletes</h3><div id="genderDistributionChart"></div></div>
+            
+            <div class="chart-card span-3-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h3 style="margin:0; font-size: 1.1rem;">Sports Participated by Athletes</h3>
+                    <div class="toggle-container">
+                        <button onclick="updateSportsPieView('chart')" id="btnSportsPieChart" class="toggle-btn active">Chart</button>
+                        <button onclick="updateSportsPieView('list')" id="btnSportsPieList" class="toggle-btn">List</button>
+                    </div>
+                </div>
+                <div id="sportsPieViewContainer"></div>
+            </div>
+
+            <div class="chart-card span-3-card">
+                <h3>All Achievements Distribution</h3>
+                <div id="achievementPieChart"></div>
+            </div>
+            
+            <div class="chart-card full-width-card">
+                <h3>Gender-wise Participation in Sports</h3>
+                <div id="sportByGenderChart"></div>
+            </div>
         </div>
 
         <div class="list-section" id="listSection">
@@ -100,6 +130,8 @@
                             <th>School Name</th>
                             <th>Achievement Type</th>
                             <th>Sports</th>
+                            <th>Venue</th>
+                            <th>Rank</th>
                         </tr>
                     </thead>
                     <tbody id="participantTableBody"></tbody>
@@ -112,18 +144,19 @@
     <script>
         let charts = {};
         let currentListData = [];
+        let globalDashboardData = null;
 
         async function fetchData() {
             try {
                 const response = await fetch('/api/data');
                 const data = await response.json();
+                globalDashboardData = data;
 
                 document.getElementById('totalAchievementsValue').innerText = data.kpiMetrics.totalAchievements;
                 document.getElementById('totalPointsValue').innerText = data.kpiMetrics.totalPoints;
                 document.getElementById('uniqueSportsValue').innerText = data.kpiMetrics.uniqueSports;
 
                 const dropdown = document.getElementById('schoolDropdown');
-                // Ensure unique school names populate correctly
                 data.schoolParticipation.forEach(item => {
                     const opt = document.createElement('option');
                     opt.value = item.School;
@@ -149,7 +182,6 @@
 
             charts.achLevel = new ApexCharts(document.querySelector("#achievementTypesChart"), barOptions(data.achievementTypesBar.map(i => i.Type), data.achievementTypesBar.map(i => i.Count))).render();
             charts.schoolAch = new ApexCharts(document.querySelector("#schoolParticipationChart"), barOptions(data.schoolParticipation.map(i => i.School), data.schoolParticipation.map(i => i.Achievements))).render();
-            charts.popSports = new ApexCharts(document.querySelector("#popularSportsChart"), barOptions(data.popularSportsBar.map(i => i.Sport), data.popularSportsBar.map(i => i.Participants), true)).render();
 
             charts.gender = new ApexCharts(document.querySelector("#genderDistributionChart"), {
                 series: data.genderDistribution.series,
@@ -158,17 +190,12 @@
                 colors: ['#3366FF', '#00E396']
             }).render();
 
-            charts.sportsPie = new ApexCharts(document.querySelector("#sportsPieChart"), {
-                series: data.sportsPie.series,
-                labels: data.sportsPie.labels,
-                chart: { type: 'pie', height: 400 }
-            }).render();
-
+            // Symmetrical height for both pies
             charts.achPie = new ApexCharts(document.querySelector("#achievementPieChart"), {
                 series: data.achievementTypesPie.series,
                 labels: data.achievementTypesPie.labels,
-                chart: { type: 'pie', height: 600, toolbar: { show: true } },
-                legend: { position: 'bottom' }
+                chart: { type: 'pie', height: 450, toolbar: { show: true } },
+                legend: { position: 'bottom', fontSize: '12px' }
             }).render();
 
             charts.genderSport = new ApexCharts(document.querySelector("#sportByGenderChart"), {
@@ -177,6 +204,40 @@
                 plotOptions: { bar: { horizontal: true } },
                 xaxis: { categories: data.sportByGender.categories }
             }).render();
+
+            updateSportsPieView('chart');
+        }
+
+        function updateSportsPieView(type) {
+            const btnChart = document.getElementById('btnSportsPieChart');
+            const btnList = document.getElementById('btnSportsPieList');
+            const container = document.getElementById('sportsPieViewContainer');
+            
+            if (charts.sportsPie) charts.sportsPie.destroy();
+            container.innerHTML = "";
+
+            if (type === 'chart') {
+                btnChart.classList.add('active');
+                btnList.classList.remove('active');
+                charts.sportsPie = new ApexCharts(container, {
+                    series: globalDashboardData.sportsPie.series,
+                    labels: globalDashboardData.sportsPie.labels,
+                    chart: { type: 'pie', height: 450 }, // Height matching achPie
+                    legend: { position: 'bottom', fontSize: '12px' }
+                });
+            } else {
+                btnList.classList.add('active');
+                btnChart.classList.remove('active');
+                charts.sportsPie = new ApexCharts(container, {
+                    series: [{ name: 'Participants', data: globalDashboardData.sportsPie.series }],
+                    chart: { type: 'bar', height: 450, toolbar: { show: true } },
+                    plotOptions: { bar: { horizontal: true, distributed: true, barHeight: '70%' } },
+                    xaxis: { categories: globalDashboardData.sportsPie.labels },
+                    legend: { show: false },
+                    dataLabels: { enabled: true }
+                });
+            }
+            charts.sportsPie.render();
         }
 
         async function loadParticipantsBySchool() {
@@ -195,6 +256,8 @@
                         <td>${item['School']}</td>
                         <td>${item['RESULTS']}</td>
                         <td>${item['Sport']}</td>
+                        <td>${item['VENUE'] || '-'}</td>
+                        <td>${item['Rank'] || '-'}</td>
                     </tr>`).join('');
 
                 document.getElementById('listTitle').innerText = schoolName === 'all' ? 'Full Participants List' : `Participants - ${schoolName}`;
@@ -204,10 +267,10 @@
         }
 
         function downloadExcel() {
-            let csvContent = "\uFEFFStudent Name,Department,Event,Achievement,Sport\n";
+            let csvContent = "\uFEFFStudent Name,School Name,Achievement Type,Sport,Venue,Rank\n";
             currentListData.forEach(row => {
                 const name = `"${row['NAME OF STUDENT'].replace(/\n/g, ' ')}"`;
-                csvContent += `${name},"${row['School']}","${row['RESULTS']}","${row['Sport']}"\n`;
+                csvContent += `${name},"${row['School']}","${row['RESULTS']}","${row['Sport']}","${row['VENUE'] || ''}","${row['Rank'] || ''}"\n`;
             });
             const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
             const link = document.createElement("a");

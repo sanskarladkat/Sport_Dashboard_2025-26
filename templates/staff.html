@@ -63,7 +63,6 @@
         .chart-card { background: var(--card-color); padding: 20px; border-radius: 10px; min-height: 380px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         h3 { text-align: center; color: var(--header-color); margin-bottom: 15px; }
 
-        /* --- CENTERED SCROLLABLE LIST BELOW GRAPHS --- */
         .list-section { margin-top: 30px; text-align: center; display: none; padding-bottom: 40px; }
         .table-wrapper { 
             margin: 0 auto; max-width: 1200px; background: white; 
@@ -72,8 +71,26 @@
         }
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th { background: var(--header-color); color: white; padding: 12px; position: sticky; top: 0; z-index: 10; font-size: 14px; }
-        td { padding: 12px; border-bottom: 1px solid #eee; color: #444; font-size: 13.5px; }
+        
+        td { padding: 12px; border-bottom: 1px solid #eee; color: #444; font-size: 13.5px; white-space: pre-line; vertical-align: top; }
+        
         tr:hover { background-color: #f8f9fa; }
+
+        /* Rank Badge */
+        .rank-badge {
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-block;
+            min-width: 100px;
+            text-align: center;
+            color: white;
+        }
+        .rank-winner { background-color: #FFD700; color: #333; }  
+        .rank-1st-runner { background-color: #C0C0C0; color: #333; }  
+        .rank-2nd-runner { background-color: #CD7F32; color: #fff; }  
+        .rank-default { background-color: #4a90e2; color: #fff; }  
 
         .excel-btn { 
             background-color: #28a745; color: white; border: none; 
@@ -116,10 +133,11 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Department</th>
+                        <th>Faculty Name</th>
+                        <th>Department Name</th>
                         <th>Gender</th>
                         <th>Event</th>
+                        <th>Result</th>
                     </tr>
                 </thead>
                 <tbody id="winnerTableBody"></tbody>
@@ -151,7 +169,6 @@
                 btnContainer.appendChild(btn);
             });
 
-            // Keep existing graph configurations
             charts.gender = new ApexCharts(document.querySelector("#genderDonut"), {
                 series: data.gender.series,
                 labels: data.gender.labels,
@@ -186,27 +203,37 @@
             const res = await fetch(`/api/winners_by_sport?sport=${encodeURIComponent(sport)}`);
             currentWinnersData = await res.json();
             
-            tableBody.innerHTML = currentWinnersData.length > 0 ? currentWinnersData.map(w => `
+            tableBody.innerHTML = currentWinnersData.length > 0 ? currentWinnersData.map(w => {
+
+                let badgeClass = "rank-default";
+                const pts = parseInt(w.Points);
+                
+                if (pts === 10) badgeClass = "rank-winner";
+                else if (pts === 7) badgeClass = "rank-1st-runner";
+                else if (pts === 5) badgeClass = "rank-2nd-runner";
+
+                return `
                 <tr>
                     <td><strong>${w.Name}</strong></td>
                     <td>${w.Department}</td>
                     <td>${w.Gender || '-'}</td>
                     <td>${w.Event || '-'}</td>
-                </tr>`).join('') : "<tr><td colspan='4' style='text-align:center;'>No winners found.</td></tr>";
+                    <td><span class="rank-badge ${badgeClass}">${w.Rank || '-'}</span></td>
+                </tr>`;
+            }).join('') : "<tr><td colspan='5' style='text-align:center;'>No winners found.</td></tr>";
             
             document.getElementById('listTitle').innerText = `${sport} Winners List`;
             listSection.style.display = 'block';
-            
-            // Scroll to the list
             listSection.scrollIntoView({ behavior: 'smooth' });
         } catch (err) { console.error("Error:", err); }
     }
 
     function downloadExcel() {
         if (!currentWinnersData.length) return;
-        let csvContent = "\uFEFFName,Department,Gender,Event\n";
+        let csvContent = "\uFEFFName,Department,Gender,Event,Rank\n";
         currentWinnersData.forEach(row => {
-            csvContent += `"${row.Name}","${row.Department}","${row.Gender || ''}","${row.Event || ''}"\n`;
+            
+            csvContent += `"${row.Name}","${row.Department}","${row.Gender || ''}","${row.Event || ''}","${row.Rank || ''}"\n`;
         });
         const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
         const link = document.createElement("a");

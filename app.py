@@ -347,16 +347,18 @@ def get_winners():
         
         filtered = df[df['Sport'] == sport]
 
+        # Ensure points are numeric and filter for 10, 7, and 5
         if 'Points' in filtered.columns:
-            filtered = filtered[pd.to_numeric(filtered['Points'], errors='coerce').isin([10, 5])]
+            filtered['Points'] = pd.to_numeric(filtered['Points'], errors='coerce').fillna(0)
+            filtered = filtered[filtered['Points'].isin([10, 7, 5])]
             filtered = filtered.sort_values(by='Points', ascending=False)
 
-        cols_to_keep = ['Name', 'Department', 'Points']
+        # Include 'Rank' in the columns to keep
+        cols_to_keep = ['Name', 'Department', 'Points', 'Rank']
         if 'Event' in filtered.columns: cols_to_keep.append('Event')
         if 'Gender' in filtered.columns: cols_to_keep.append('Gender')
         
         final_cols = [c for c in cols_to_keep if c in filtered.columns]
-
         return jsonify(filtered[final_cols].to_dict(orient='records'))
 
     except Exception as e: 
@@ -417,7 +419,7 @@ def get_participants_by_school():
 
         filtered_df = df[df['School'] == school_name]
         
-        result = filtered_df[['NAME OF STUDENT', 'School', 'RESULTS', 'Sport']].drop_duplicates()
+        result = filtered_df[['NAME OF STUDENT', 'School', 'RESULTS', 'Sport', 'VENUE', 'Rank']].drop_duplicates()
         
         return jsonify(result.to_dict(orient='records'))
     except Exception as e:
@@ -432,56 +434,69 @@ def get_inter_department_data():
         sheet = spreadsheet.worksheet("Inter_department")
         
         all_values = sheet.get_all_values()
-        
         headers = all_values[0]
-        
         data_rows = all_values[1:]
-        
         df = pd.DataFrame(data_rows, columns=headers)
 
+        # Clean Data
         df = df[df['SR No'].astype(str).str.strip() != ""]
         df['SR No'] = pd.to_numeric(df['SR No'], errors='coerce')
+        df['POINT'] = pd.to_numeric(df['POINT'], errors='coerce').fillna(0)
         df['Sport'] = df['Sport'].astype(str).str.strip().str.upper()
+        
+        # Calculate Total Participants from Column K (Headcount)
+        df['Participants'] = pd.to_numeric(df['Participants'], errors='coerce').fillna(0)
+        total_participants_count = int(df['Participants'].sum())
 
+        # --- NEW: Group total participants by Sport for the Pie Chart ---
+        # This ensures the chart reflects the headcount of athletes, not just the count of entries.
+        sports_participant_group = df.groupby('Sport')['Participants'].sum().reset_index()
+
+        # KPIs and Charts based on Unique Serial Numbers for Achievement metrics
         unique_achievements = df.drop_duplicates(subset=['SR No'])
 
         kpi_metrics = {
             'totalAchievements': len(unique_achievements),
-            'totalPoints': int(pd.to_numeric(unique_achievements['POINT'], errors='coerce').sum()),
-            'uniqueSports': unique_achievements['Sport'].nunique() 
+            'totalPoints': int(unique_achievements['POINT'].sum()),
+            'uniqueSports': unique_achievements['Sport'].nunique(),
+            'totalParticipants': total_participants_count
         }
 
+        # Achievement Level Data
         achievement_counts = unique_achievements['RESULTS'].value_counts().reset_index()
         achievement_counts.columns = ['Type', 'Count']
         
-        sport_counts = unique_achievements['Sport'].value_counts().reset_index()
-        sport_counts.columns = ['Sport', 'Count']
-        
+        # School-wise Achievements
         school_counts = unique_achievements['School'].value_counts().reset_index()
         school_counts.columns = ['School', 'Achievements']
+
+        # School-wise Total Points
+        school_points = unique_achievements.groupby('School')['POINT'].sum().reset_index()
+        school_points.columns = ['School', 'Points']
+        school_points = school_points.sort_values(by='Points', ascending=False)
 
         return jsonify({
             'kpiMetrics': kpi_metrics,
             'achievementLevel': achievement_counts.to_dict(orient='records'),
+            'schoolAchievements': school_counts.to_dict(orient='records'),
+            'schoolPoints': school_points.to_dict(orient='records'),
+            # Updated 'sportsParticipated' to use the summed participant headcount
             'sportsParticipated': {
-                'labels': sport_counts['Sport'].tolist(),
-                'series': sport_counts['Count'].tolist()
+                'labels': sports_participant_group['Sport'].tolist(),
+                'series': sports_participant_group['Participants'].astype(int).tolist()
             },
             'allAchievements': {
                 'labels': achievement_counts['Type'].tolist(),
                 'series': achievement_counts['Count'].tolist()
-            },
-            'schoolAchievements': school_counts.to_dict(orient='records')
+            }
         })
     except Exception as e:
-        return jsonify({"error": str(e)}), 500 
+        return jsonify({"error": str(e)}), 500
     
     
 @app.route('/api/inter_dept_participants')
 def get_inter_dept_participants():
-    """Filters and returns student details from the Inter_department sheet."""
     list_type = request.args.get('type') 
-    
     try:
         client = get_gspread_client()
         sheet_url = 'https://docs.google.com/spreadsheets/d/1YiXrlu6qxtorsoDThvB62HTVSuWE9BhQ9J-pbFH6dGc/edit'
@@ -490,9 +505,11 @@ def get_inter_dept_participants():
         data = sheet.get_all_records()
         df = pd.DataFrame(data)
 
+        # Clean Data
         df['RESULTS'] = df['RESULTS'].astype(str).str.strip()
         df['Sport'] = df['Sport'].astype(str).str.strip().str.title()
         df['School'] = df['School'].astype(str).str.strip()
+        df['Rank'] = df['Rank'].astype(str).str.strip() # Added Rank column cleanup
 
         if list_type == '1st':
             filtered_df = df[df['RESULTS'].str.contains('1st', case=False)]
@@ -503,7 +520,8 @@ def get_inter_dept_participants():
         else:
             filtered_df = df
 
-        student_list = filtered_df[['NAME OF STUDENT', 'School', 'Sport', 'RESULTS', 'Event']]
+        # Added 'Rank' to the selected columns list
+        student_list = filtered_df[['NAME OF STUDENT', 'School', 'Sport', 'RESULTS', 'Event', 'Rank']]
         
         return jsonify(student_list.to_dict(orient='records'))
     except Exception as e:
