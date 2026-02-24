@@ -10,6 +10,7 @@ import io
 import matplotlib
 matplotlib.use('Agg') 
 import matplotlib.pyplot as plt
+from datetime import datetime
 
 app = Flask(__name__)
 cache = Cache(app, config={'CACHE_TYPE': 'SimpleCache', 'CACHE_DEFAULT_TIMEOUT': 100})
@@ -240,26 +241,32 @@ def get_operations_months():
 def get_operations_data():
     try:
         df = get_operations_dataframe()
-        if df.empty: return jsonify({'facilities': [], 'used': [], 'unused': []})
+        if df.empty: return jsonify({'facilities': [], 'used': [], 'unused': [], 'totals': []})
         df.columns = df.columns.str.strip()
+        
         selected_month = request.args.get('month')
         if selected_month and 'Month' in df.columns:
             df = df[df['Month'] == selected_month]
+        
         required = ['Games', 'utilized', 'Capacity_month']
-        if not all(col in df.columns for col in required): return jsonify({"error": "Missing Columns in Sheet2"}), 500
-        for col in ['utilized', 'Capacity_month', 'Training Session by Staff', 'Training Session by Student']:
+        if not all(col in df.columns for col in required): 
+            return jsonify({"error": "Missing Columns in Sheet2"}), 500
+        
+        for col in ['utilized', 'Capacity_month']:
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col].astype(str).str.replace('%', '').str.replace(',', ''), errors='coerce').fillna(0)
+
         df['unused'] = df['Capacity_month'] - df['utilized']
         df['unused'] = df['unused'].apply(lambda x: max(x, 0))
+
         return jsonify({
             'facilities': df['Games'].tolist(),
             'used': df['utilized'].tolist(),
             'unused': df['unused'].tolist(),
-            'training_staff': df['Training Session by Staff'].tolist() if 'Training Session by Staff' in df.columns else [],
-            'training_student': df['Training Session by Student'].tolist() if 'Training Session by Student' in df.columns else []
+            'totals': df['Capacity_month'].tolist()  
         })
-    except Exception as e: return jsonify({"error": str(e)}), 500
+    except Exception as e: 
+        return jsonify({"error": str(e)}), 500
     
     
 # staff summit dashboard

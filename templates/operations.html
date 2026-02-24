@@ -103,19 +103,31 @@
                         { name: 'Remaining', data: data.unused }
                     ],
                     chart: { type: 'bar', height: 550, stacked: true, toolbar: { show: false } },
-                    colors: ['#f50226', '#05fa7f'], // colors
+                    colors: ['#f50226', '#05fa7f'],
                     grid: { padding: { right: 80, left: 0 } },
                     plotOptions: {
-                        bar: { horizontal: true, barHeight: '55%', dataLabels: { total: { enabled: true, offsetX: 10, style: { fontSize: '12px', fontWeight: 700, color: '#333' } } } }
+                        bar: { 
+                            horizontal: true, 
+                            barHeight: '55%', 
+                            dataLabels: { 
+                                total: { 
+                                    enabled: true, 
+                                    offsetX: 10, 
+                                    style: { fontSize: '12px', fontWeight: 700, color: '#333' },
+                                     
+                                    formatter: function(val) {
+                                        return val.toLocaleString();
+                                    }
+                                } 
+                            } 
+                        }
                     },
                     dataLabels: { 
                         enabled: true,
                         style: { fontSize: '12px', fontWeight: 'bold', colors: ['#fff'] },
                         formatter: function (val, opts) {
                             const index = opts.dataPointIndex;
-                            const used = data.used[index];
-                            const unused = data.unused[index];
-                            const total = used + unused;
+                            const total = data.used[index] + data.unused[index];
                             const percent = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
                             return percent > 5 ? percent + "%" : "";
                         }
@@ -124,10 +136,8 @@
                     yaxis: { labels: { maxWidth: 180, style: { fontSize: '12px', fontFamily: 'Poppins' } } },
                     tooltip: { 
                         y: { 
-                            formatter: function (val, { seriesIndex, dataPointIndex, w }) {
-                                const used = data.used[dataPointIndex];
-                                const unused = data.unused[dataPointIndex];
-                                const total = used + unused;
+                            formatter: function (val, { dataPointIndex }) {
+                                const total = data.used[dataPointIndex] + data.unused[dataPointIndex];
                                 const percent = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
                                 return val.toLocaleString() + " (" + percent + "%)";
                             }
