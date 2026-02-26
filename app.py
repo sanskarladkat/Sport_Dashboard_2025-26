@@ -293,12 +293,12 @@ def get_staff_data():
         gender_data = {'labels': g_counts['Gender'].tolist(), 'series': g_counts['count'].astype(int).tolist()}
         dept_data = {'categories': [], 'series': []}
         if 'Department' in df.columns:
-            d_counts = df['Department'].value_counts().reset_index().head(10)
+            d_counts = df['Department'].value_counts().reset_index().head(25)
             dept_data = {'categories': d_counts['Department'].tolist(), 'series': d_counts['count'].tolist()}
         dept_points_data = {'categories': [], 'series': []}
         if 'Department' in df.columns and 'Points' in df.columns:
             df['Points'] = pd.to_numeric(df['Points'], errors='coerce').fillna(0)
-            d_points = df.groupby('Department')['Points'].sum().reset_index().sort_values(by='Points', ascending=False).head(10)
+            d_points = df.groupby('Department')['Points'].sum().reset_index().sort_values(by='Points', ascending=False).head(25)
             dept_points_data = {'categories': d_points['Department'].tolist(), 'series': d_points['Points'].tolist()}
         sports_data = {'labels': [], 'series': []}
         if 'Sport' in df.columns:

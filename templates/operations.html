@@ -46,7 +46,7 @@
     <div class="container">
         <a href="/" class="back-btn">← Back to Home</a>
         <div class="section-header">
-            <h1 id="reportTitle">Monthly Sports Operations Report</h1>
+            <h1 id="reportTitle">MIT-WPU Monthly Sports Operations Report</h1>
             <div>
                 <label for="monthSelector" style="font-weight: 600; margin-right: 10px;">Select Month:</label>
                 <select id="monthSelector" onchange="fetchAndRenderOperations(this.value)">
@@ -133,7 +133,7 @@
                         }
                     },
                     xaxis: { categories: data.facilities, min: 0, max: maxOpsVal * 1.15, labels: { formatter: (val) => val.toLocaleString() } },
-                    yaxis: { labels: { maxWidth: 180, style: { fontSize: '12px', fontFamily: 'Poppins' } } },
+                    yaxis: { labels: { maxWidth: 250, style: { fontSize: '12px', fontFamily: 'Poppins' } } },
                     tooltip: { 
                         y: { 
                             formatter: function (val, { dataPointIndex }) {
