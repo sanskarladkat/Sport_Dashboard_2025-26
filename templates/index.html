@@ -3,217 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MIT-WPU Sports Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
-    
-    <link rel="prefetch" href="/achievements">
-    <link rel="prefetch" href="/budget">
-    <link rel="prefetch" href="/operations">
-    <link rel="prefetch" href="/staff-summit">
-    <link rel="prefetch" href="/inter_department">
+    <title>MIT-WPU Sports</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
 
     <style>
         :root {
-            --header-h: 15vh; 
-            --image-h: 55vh; 
-            --primary: #1a237e; 
-            --accent: #ff4560;
-            --bg-color: #f4f7fc; 
-            --card-bg: #ffffff;  
-            --text-color: #333333; 
-            --shadow-color: rgba(0,0,0,0.1); 
-            --border-color: #e0e0e0;
+            --primary: #1a237e;
+            --accent: #ff4081;
+            --bg-mesh: radial-gradient(at 0% 0%, rgba(26, 35, 126, 0.05) 0, transparent 50%), 
+                       radial-gradient(at 50% 0%, rgba(255, 64, 129, 0.05) 0, transparent 50%);
+            --glass: rgba(255, 255, 255, 0.7);
+            --text: #1e293b;
+            --card-radius: 24px;
+            --shadow: 0 20px 40px rgba(0,0,0,0.08);
         }
 
-        * { box-sizing: border-box; }
-
+        * { box-sizing: border-box; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            background-color: #f1f5f9;
+            background-image: var(--bg-mesh);
+            color: var(--text);
+            margin: 0; padding: 0; min-height: 100vh;
+            overflow-x: hidden;
         }
 
         header {
-            height: var(--header-h);
-            display: flex;
+            height: 100px;
+            display: flex; 
             justify-content: center;
             align-items: center;
-            padding: 0 20px;
-            text-align: center;
-            background: var(--card-bg);
-            border-bottom: 4px solid var(--primary);
-            box-shadow: 0 4px 10px var(--shadow-color);
+            padding: 0 6%;
+            background: var(--glass); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            box-shadow: var(--shadow);
+            position: sticky; top: 0; z-index: 100;
         }
 
         header h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            margin: 0;
-            color: var(--primary);
+            font-size: 1.8rem;
+            font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 3px;
+            margin: 0;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            background-clip: text;              
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent;
+            text-align: center;
         }
 
-        .banner-wrapper {
-            width: 100%;
-            height: var(--image-h);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px 0;
+        /*Winners*/
+        .winners-section { width: 95%; margin: 40px auto; }
+
+        .slider-container {
+            overflow: hidden; width: 100%;
+            background: var(--glass); backdrop-filter: blur(10px);
+            padding: 40px; border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: var(--shadow);
         }
 
-        .banner-container {
-            width: 80%;
-            height: 100%;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px var(--shadow-color);
-            border: 1px solid var(--border-color);
+        .slider-track { display: flex; gap: 30px; }
+
+        .slide {
+            min-width: calc((100% / 3) - 20px);
+            height: 600px; border-radius: 20px;
+            background: #fff; position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transform-style: preserve-3d;
         }
 
-        .banner-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center;
-            transition: transform 8s ease;
+        .slide:hover {
+            transform: translateY(-20px) rotateY(-5deg);
+            box-shadow: 0 40px 80px rgba(0,0,0,0.2);
+            border: 2px solid var(--accent);
         }
 
-        .nav-section {
-            flex-grow: 1;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 30px 20px;
-        }
+        .slide img { width: 100%; height: 100%; object-fit: contain; padding: 10px; border-radius: 20px; }
 
+        /*Navigation*/
+        .nav-section { padding: 60px 4%; }
         .nav-grid {
-            display: flex;         
-            flex-wrap: wrap;        
-            justify-content: center; 
-            gap: 30px;
-            width: 90%;
-            max-width: 1200px;
-            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
         }
 
         .nav-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 40px 20px;
-            text-decoration: none;
-            color: var(--primary);
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 4px 15px var(--shadow-color);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-            
-            width: calc(33.33% - 30px); 
-            min-width: 280px;
+            background: var(--glass); backdrop-filter: blur(15px);
+            border-radius: var(--card-radius); padding: 50px 30px;
+            text-decoration: none; color: var(--text);
+            display: flex; flex-direction: column; align-items: center;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: var(--shadow);
+            position: relative; overflow: hidden;
         }
 
-        .nav-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin: 0;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
+        .nav-card::after {
+            content: ''; position: absolute; width: 100%; height: 100%;
+            top: 0; left: -100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: 0.5s;
         }
-
-        .nav-icon svg {
-            width: 60px;
-            height: 60px;
-            fill: var(--primary);
-            margin-bottom: 15px;
-            transition: fill 0.3s ease, transform 0.3s ease;
-        }
+        .nav-card:hover::after { left: 100%; }
 
         .nav-card:hover {
-            transform: translateY(-8px);
-            background: var(--primary); 
-            color: #ffffff; 
-            box-shadow: 0 15px 30px rgba(26, 35, 126, 0.3);
-            border-color: var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, #121858 100%);
+            color: #fff; transform: translateY(-15px) scale(1.02);
         }
 
-        .nav-card:hover .nav-icon svg {
-            fill: #ffffff;
-            transform: scale(1.1);
+        .nav-icon { 
+            font-size: 3.5rem; margin-bottom: 25px; color: var(--primary);
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+            animation: float 3s ease-in-out infinite; 
         }
 
-        .modal {
-            display: none; 
-            position: fixed; 
-            z-index: 1000; 
-            left: 0;
-            top: 0;
-            width: 100%; 
-            height: 100%; 
-            background-color: rgba(0,0,0,0.6);
-            backdrop-filter: blur(5px);
+        .nav-card:hover .nav-icon { color: var(--accent); transform: rotateY(360deg) scale(1.1); }
+        .nav-title { font-size: 1.2rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; text-align: center; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
 
-        .modal-content {
-            background-color: #fff;
-            margin: 15% auto; 
-            padding: 30px;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-            position: relative;
+        
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); }
+        .modal-content { 
+            background: var(--glass); border: 2px solid var(--primary);
+            margin: 8% auto; padding: 50px; border-radius: 40px; 
+            width: 90%; max-width: 450px; text-align: center; color: var(--text);
+            animation: modalBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
 
-        .close-btn {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            color: #aaa;
-            font-size: 24px;
-            font-weight: bold;
-            cursor: pointer;
+        @keyframes modalBounce {
+            0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
         }
 
-        .auth-input {
-            width: 100%;
-            padding: 12px;
-            margin: 20px 0;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
+        .auth-input { 
+            width: 100%; padding: 18px; margin: 25px 0; border-radius: 15px; 
+            border: 2px solid var(--primary); background: rgba(255,255,255,0.05); 
+            color: var(--text); text-align: center; font-size: 1.3rem; letter-spacing: 5px;
         }
 
-        .auth-submit {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            font-weight: 600;
-            width: 100%;
-        }
-
-        .error-msg {
-            color: var(--accent);
-            font-size: 14px;
-            margin-top: 10px;
-            display: none;
+        .auth-submit { 
+            background: linear-gradient(45deg, var(--primary), var(--accent)); 
+            color: #fff; border: none; padding: 18px; border-radius: 15px; 
+            font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase;
         }
     </style>
 </head>
@@ -223,96 +162,85 @@
         <h1>MIT-WPU Sports and Gymkhana Dashboard</h1>
     </header>
 
-    <div class="banner-wrapper">
-        <div class="banner-container">
-            <img src="{{ url_for('static', filename='banner.jpg') }}" alt="MIT WPU Campus" class="banner-image">
+    <div class="winners-section">
+        <h2 style="text-align: center; font-size: 2rem; margin-bottom: 30px; letter-spacing: 5px;">🌟 MIT-WPU Sports Champions 🌟</h2>
+        <div class="slider-container">
+            <div class="slider-track" id="sliderTrack">
+                {% if winner_images %}
+                    {% for img in winner_images %}
+                    <div class="slide">
+                        <img src="{{ url_for('static', filename='images/' + img) }}" alt="Winner">
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
         </div>
     </div>
-
+    
     <div class="nav-section">
         <div class="nav-grid">
             <a href="/achievements" class="nav-card">
-                <div class="nav-icon">
-                    <svg viewBox="0 0 24 24"><path d="M20.2 2H3.8C2.8 2 2 2.8 2 3.8V6c0 3.1 2.3 5.7 5.3 6.1 1.2 2.3 3.5 4 6.2 4.3v2.6H8v2h8v-2h-5.5v-2.6c2.7-.3 5-2 6.2-4.3 3-.4 5.3-3 5.3-6.1V3.8c0-1-.8-1.8-1.8-1.8zM4 6V4h3v2c0 2-1.3 3.7-3 4.3V6zm13 4.3c-1.7-.6-3-2.3-3-4.3V4h3v2z"/></svg>
-                </div>
+                <div class="nav-icon"><i class="fas fa-trophy"></i></div>
                 <div class="nav-title">Sports Achievement</div>
             </a>
 
             <div class="nav-card" onclick="openAuthModal()">
-                <div class="nav-icon">
-                    <svg viewBox="0 0 24 24"><path d="M13.66 7C13.1 5.82 11.9 5 10.5 5L6 5V3h12v2l-3.26.03c.41.53.69 1.15.8 1.83l2.46-.03v2h-2.18c-.3 2.05-1.92 3.68-3.98 3.96V14h3l4 7H13l-3.3-5.8c-.2.05-.4.07-.6.07-1.7 0-3.1-1.2-3.5-2.8H17v-2H6v-2h7.66z"/></svg>
-                </div>
+                <div class="nav-icon"><i class="fas fa-indian-rupee-sign"></i></div>
                 <div class="nav-title">Sports Budget</div>
             </div>
 
             <a href="/operations" class="nav-card">
-                <div class="nav-icon">
-                    <svg viewBox="0 0 24 24"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg>
-                </div>
+                <div class="nav-icon"><i class="fas fa-building"></i></div>
                 <div class="nav-title">Facility Uses Report</div>
             </a>
 
             <a href="/staff-summit" class="nav-card">
-                <div class="nav-icon">
-                    <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-                </div>
+                <div class="nav-icon"><i class="fas fa-users"></i></div>
                 <div class="nav-title">Staff Summit</div>
             </a>
 
             <a href="/inter_department" class="nav-card">
-                <div class="nav-icon">
-                    <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
-                </div>
-                <div class="nav-title">Inter-Department Achiveements</div>
+                <div class="nav-icon"><i class="fas fa-chart-column"></i></div>
+                <div class="nav-title">Inter-Department Achievements</div>
             </a>
         </div>
     </div>
 
     <div id="authModal" class="modal">
         <div class="modal-content">
-            <span class="close-btn" onclick="closeAuthModal()">&times;</span>
-            <h2>Restricted Access</h2>
-            <p>Please enter the access code to view the Sports Budget.</p>
-            <input type="text" id="authInput" class="auth-input" placeholder="Enter Access Code" onkeypress="handleEnter(event)">
-            <button class="auth-submit" onclick="checkPassword()">View Dashboard</button>
-            <p id="errorMsg" class="error-msg">Incorrect access code. Please try again.</p>
+            <div style="font-size: 4rem; color: var(--primary); margin-bottom: 20px;"><i class="fas fa-lock"></i></div>
+            <h2 style="margin:0;">Secure Access</h2>
+            <p style="opacity: 0.7;">Enter administrative credentials</p>
+            <input type="password" id="authInput" class="auth-input" placeholder="••••">
+            <button onclick="checkPassword()" class="auth-submit">Verify Identity</button>
+            <p style="margin-top:20px; font-size:0.9rem; cursor:pointer; font-weight:600;" onclick="document.getElementById('authModal').style.display='none'">Go Back</p>
         </div>
     </div>
 
     <script>
-        const modal = document.getElementById("authModal");
-        const input = document.getElementById("authInput");
-        const errorMsg = document.getElementById("errorMsg");
+        let currentIndex = 0;
+        const track = document.getElementById('sliderTrack');
+        const slides = document.querySelectorAll('.slide');
 
-        const ACCESS_CODE = "budget";
-
-        function openAuthModal() {
-            modal.style.display = "block";
-            input.value = "";
-            errorMsg.style.display = "none";
-            input.focus();
+        function moveSlider() {
+            if (slides.length <= 3) return;
+            currentIndex++;
+            if (currentIndex > slides.length - 3) { currentIndex = 0; }
+            const slideWidth = slides[0].offsetWidth + 30;
+            track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
         }
+        setInterval(moveSlider, 4500);
 
-        function closeAuthModal() {
-            modal.style.display = "none";
+        function openAuthModal() { 
+            document.getElementById('authModal').style.display='block'; 
+            document.getElementById('authInput').focus(); 
         }
-
         function checkPassword() {
-            if (input.value === ACCESS_CODE) {
+            if (document.getElementById('authInput').value === "budget") {
                 window.location.href = "/budget";
-            } else {
-                errorMsg.style.display = "block";
-                input.style.borderColor = "var(--accent)";
-            }
-        }
-
-        function handleEnter(e) {
-            if (e.key === "Enter") checkPassword();
-        }
-
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                closeAuthModal();
+            } else { 
+                alert("ACCESS DENIED"); 
+                document.getElementById('authInput').value = "";
             }
         }
     </script>

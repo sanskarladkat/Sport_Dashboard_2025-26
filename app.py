@@ -58,9 +58,16 @@ def get_sheet_dataframe():
 
 # index file route
 @app.route('/')
-def index(): 
-    return render_template('index.html')
-
+def index():
+    image_folder = os.path.join('static', 'images')
+    
+    exts = ('.jpg', '.jpeg', '.png', '.JPG', '.PNG', '.JPEG')
+    
+    images = []
+    if os.path.exists(image_folder):
+        images = [f for f in os.listdir(image_folder) if f.endswith(exts)]
+    
+    return render_template('index.html', winner_images=images)
 
 # dashboard file 
 @app.route('/achievements')
