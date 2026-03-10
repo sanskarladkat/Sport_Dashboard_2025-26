@@ -1,0 +1,161 @@
+:root { 
+    --bg-color: #f4f7fc; 
+    --card-color: #ffffff; 
+    --text-color: #333333; 
+    --header-color: #1a237e; 
+}
+
+body { 
+    font-family: 'Poppins', sans-serif; 
+    background: var(--bg-color); 
+    color: var(--text-color); 
+    padding: 20px; 
+    margin: 0; 
+}
+
+.container { max-width: 1450px; margin: auto; display: flex; flex-direction: column; gap: 20px; }
+
+.header-row { 
+    background: var(--card-color); 
+    padding: 15px 20px; 
+    border-radius: 10px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+}
+
+.main-title { color: var(--header-color); margin: 0; font-size: 1.6rem; }
+
+.back-btn { 
+    text-decoration: none; 
+    color: var(--header-color); 
+    font-weight: 600; 
+    border: 1px solid var(--header-color); 
+    padding: 8px 15px; 
+    border-radius: 20px; 
+    transition: 0.3s; 
+    font-size: 14px;
+}
+
+.back-btn:hover { background: var(--header-color); color: white; }
+
+.top-grid { 
+    display: grid; 
+    grid-template-columns: repeat(2, 1fr) 320px; 
+    gap: 20px; 
+}
+
+.kpi-card { 
+    background: var(--card-color); 
+    padding: 20px; 
+    border-radius: 10px; 
+    text-align: center; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center;
+}
+
+.kpi-card h3 { font-size: 0.9rem; margin: 0 0 10px 0; color: var(--text-color); opacity: 0.8; }
+.kpi-card h2 { font-size: 2.2rem; font-weight: 700; color: var(--header-color); margin: 0; }
+
+.sidebar-card { padding: 15px !important; text-align: center; border: 1px solid var(--header-color); }
+.sidebar-card h3 { font-size: 0.95rem; margin-bottom: 12px; color: var(--header-color); font-weight: 600; }
+
+.sport-btn-container { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 8px; 
+    max-height: 160px; 
+    overflow-y: auto; 
+    padding-right: 5px;
+}
+
+.sport-btn {
+    background: transparent; 
+    color: var(--header-color); 
+    font-weight: 600; 
+    border: 1px solid var(--header-color); 
+    padding: 6px 10px; 
+    border-radius: 20px; 
+    cursor: pointer; 
+    font-size: 0.8rem; 
+    transition: 0.3s; 
+    font-family: 'Poppins';
+}
+
+.sport-btn:hover { background: var(--header-color); color: white; }
+
+.charts-grid { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 20px; 
+}
+
+.chart-card { 
+    background: var(--card-color); 
+    padding: 20px; 
+    border-radius: 10px; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+}
+
+.full-width-card { grid-column: 1 / -1; }
+
+h3 { text-align: center; color: var(--header-color); margin-bottom: 15px; }
+
+/*List Section*/
+.list-section { margin-top: 30px; text-align: center; display: none; padding-bottom: 40px; }
+#listTitle { color: var(--header-color); margin-bottom: 15px; }
+
+.table-wrapper { 
+    margin: 0 auto; 
+    max-width: 1200px; 
+    background: white; 
+    border-radius: 10px; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+    overflow-y: auto; 
+    max-height: 500px; 
+    border: 1px solid #eee;
+}
+
+table { width: 100%; border-collapse: collapse; text-align: left; }
+th { background: var(--header-color); color: white; padding: 12px; position: sticky; top: 0; z-index: 10; font-size: 14px; }
+td { padding: 12px; border-bottom: 1px solid #eee; color: #444; font-size: 13.5px; white-space: pre-line; vertical-align: top; }
+tr:hover { background-color: #f8f9fa; }
+
+/*Badges*/
+.rank-badge {
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-block;
+    min-width: 100px;
+    text-align: center;
+    color: white;
+}
+.rank-winner { background-color: #FFD700; color: #333; }  
+.rank-1st-runner { background-color: #C0C0C0; color: #333; }  
+.rank-2nd-runner { background-color: #CD7F32; color: #fff; }  
+.rank-default { background-color: #4a90e2; color: #fff; }  
+
+.excel-btn { 
+    background-color: #28a745; 
+    color: white; 
+    border: none; 
+    padding: 12px 30px; 
+    border-radius: 25px; 
+    cursor: pointer; 
+    font-size: 0.9rem; 
+    font-weight: 600; 
+    margin-top: 20px; 
+    transition: 0.3s; 
+}
+
+.excel-btn:hover { background-color: #218838; transform: translateY(-2px); }
+
+@media (max-width: 1024px) {
+    .charts-grid { grid-template-columns: 1fr; }
+    .top-grid { grid-template-columns: 1fr; }
+}

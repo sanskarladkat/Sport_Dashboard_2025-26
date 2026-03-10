@@ -3,153 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sports Budget & Operations 2025</title>
+    <title>Sports Budget & Operations</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
-    <style>
-        :root { --bg-color: #f4f7fc; --card-color: #ffffff; --text-color: #333333; --header-color: #1a237e; --shadow-color: rgba(0, 0, 0, 0.05); }
-        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 40px; }
-        .container { max-width: 1400px; margin: auto; background: var(--card-color); padding: 40px; border-radius: 15px; box-shadow: 0 4px 20px var(--shadow-color); }
-        h1, h2 { text-align: center; color: var(--header-color); }
-        .chart-section { margin-top: 30px; }
-        .section-header { margin-top: 60px; border-top: 2px solid #eee; padding-top: 20px; }
-
-        .charts-row { 
-            display: flex; 
-            gap: 20px; 
-            margin-top: 40px; 
-            flex-wrap: wrap; 
-            align-items: flex-start;
-        }
-        .col-small { flex: 2; min-width: 450px; }
-        .col-large { flex: 3; min-width: 500px; }
-
-        .back-btn {
-            background-color: var(--header-color);
-            color: white; 
-            text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 5px; 
-            font-size: 14px;
-            transition: background 0.3s;
-            margin-right: 10px;
-        }
-        .back-btn:hover { background-color: #303f9f; }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/budget_style.css') }}">
 </head>
 <body>
     <div class="container">
         <a href="/" class="back-btn">← Back to Home</a>
         <h1>MIT-WPU Physical Education & Sports</h1>
         
-        <h2 style="opacity: 0.7; font-size: 1.2rem; margin-top: -10px;">Budget Utilization 2025-26</h2>
-        <h3>Total Budget: ₹ 98,99,668</h3>
+        <h2 class="sub-header">Budget Utilization 2025-26</h2>
+        <h3 class="total-budget-label">Total Budget: ₹ 98,99,668</h3>
         
         <div class="chart-section">
-            <h3 style="text-align: center;">Total Budget Utilization </h3>
+            <h3 class="chart-title">Total Budget Utilization</h3>
             <div id="totalUtilizationChart"></div>
         </div>
 
         <div class="charts-row">
             <div class="col-small">
-                <h3 style="text-align: center;">Funds Distribution (Category-wise)</h3>
+                <h3 class="chart-title">Funds Distribution (Category-wise)</h3>
                 <div id="budgetPieChart"></div>
             </div>
 
             <div class="col-large">
-                <h3 style="text-align: center;">Breakdown of Budget Utilization</h3>
+                <h3 class="chart-title">Breakdown of Budget Utilization</h3>
                 <div id="budgetStackChart"></div>
             </div>
         </div>
-
     </div>
 
-    <script>
-        async function fetchAndRenderBudget() {
-            try {
-                const response = await fetch('/api/budget');
-                const data = await response.json();
-
-                const actualSpendList = data.series.find(s => s.name === 'Actual Spend').data;
-                const unutilizedList = data.series.find(s => s.name === 'Unutilized Amount').data;
-                const totalActual = actualSpendList.reduce((a, b) => a + b, 0);
-                const totalUnutilized = unutilizedList.reduce((a, b) => a + b, 0);
-
-                
-                const rowTotals = actualSpendList.map((val, i) => val + unutilizedList[i]);
-                const maxBudgetVal = Math.max(...rowTotals);
-
-                const totalUtilOptions = {
-                    series: [
-                        { name: 'Consumed', data: [totalActual] }, 
-                        { name: 'Remaining', data: [totalUnutilized] }
-                    ],
-                    chart: { type: 'bar', height: 150, stacked: true, stackType: '100%', toolbar: { show: false } },
-                    colors: ['#f70a2c', '#05fc81'], // color
-                    plotOptions: { bar: { horizontal: true, barHeight: '50%' } },
-                    xaxis: { categories: ['Total Budget'], labels: {show: false}, axisBorder: {show: false}, axisTicks: {show: false} },
-                    tooltip: { y: { formatter: (val) => "₹ " + val.toLocaleString() } },
-                    legend: { position: 'top' }
-                };
-                new ApexCharts(document.querySelector("#totalUtilizationChart"), totalUtilOptions).render();
-
-                const totalPerCategory = data.categories.map((cat, i) => data.series[0].data[i] + data.series[1].data[i]);
-                const pieOptions = {
-                    series: totalPerCategory, labels: data.categories,
-                    chart: { type: 'pie', height: 450 }, 
-                    legend: { position: 'bottom' },
-                    tooltip: { y: { formatter: (val) => "₹ " + val.toLocaleString() } }, theme: { mode: 'light' }
-                };
-                new ApexCharts(document.querySelector("#budgetPieChart"), pieOptions).render();
-
-                const stackOptions = {
-                    series: [
-                        { name: 'Consumed', data: actualSpendList },
-                        { name: 'Remaining', data: unutilizedList }
-                    ],
-                    chart: { 
-                        type: 'bar', 
-                        height: 600, 
-                        stacked: true, 
-                        toolbar: { show: false } 
-                    }, 
-                    colors: ['#f70a2c', '#05fc81'],
-                    
-                    grid: {
-                        padding: { right: 80, left: 0 }
-                    },
-
-                    plotOptions: { 
-                        bar: { 
-                            horizontal: true, 
-                            barHeight: '60%', 
-                            dataLabels: { total: { enabled: true, offsetX: 10, style: { fontSize: '12px', fontWeight: 700, color: '#333' } } } 
-                        } 
-                    },
-                    dataLabels: { enabled: false }, 
-                    xaxis: { 
-                        categories: data.categories, 
-                        min: 0, 
-                        max: maxBudgetVal * 1.15, 
-                        labels: { formatter: (val) => val >= 1000000 ? (val / 1000000).toFixed(1) + 'M' : val } 
-                    },
-                    yaxis: { 
-                        labels: { 
-                            maxWidth: 180, 
-                            style: { fontSize: '12px', fontFamily: 'Poppins' } 
-                        } 
-                    },
-                    tooltip: { y: { formatter: (val) => "₹ " + val.toLocaleString() } }, legend: { position: 'top' }
-                };
-                new ApexCharts(document.querySelector("#budgetStackChart"), stackOptions).render();
-            } catch (error) { console.error("Error loading budget:", error); }
-        }
-
-        fetchAndRenderBudget();
-    </script>
+    <script src="{{ url_for('static', filename='js/budget_script.js') }}"></script>
 </body>
 </html>

@@ -1,0 +1,77 @@
+:root { 
+    --bg-color: #f4f7fc; 
+    --card-color: #ffffff; 
+    --text-color: #333333; 
+    --header-color: #1a237e; 
+    --shadow-color: rgba(0, 0, 0, 0.05); 
+}
+
+body { 
+    font-family: 'Poppins', sans-serif; 
+    background-color: var(--bg-color); 
+    color: var(--text-color); 
+    margin: 0; 
+    padding: 40px; 
+}
+
+.container { 
+    max-width: 1200px; 
+    margin: auto; 
+    background: var(--card-color); 
+    padding: 40px; 
+    border-radius: 15px; 
+    box-shadow: 0 4px 20px var(--shadow-color); 
+}
+
+h1, h2 { text-align: center; color: var(--header-color); }
+
+.section-header { 
+    margin-top: 20px; 
+    border-bottom: 2px solid #eee; 
+    padding-bottom: 20px; 
+    margin-bottom: 30px;
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    flex-wrap: wrap;
+}
+
+.section-header h1 { margin: 0; font-size: 1.8rem; text-align: left; }
+
+.selector-group { display: flex; align-items: center; }
+
+.selector-label { font-weight: 600; margin-right: 10px; }
+
+select#monthSelector {
+    padding: 10px 15px; 
+    font-size: 16px; 
+    border-radius: 8px; 
+    border: 1px solid #ccc;
+    font-family: 'Poppins', sans-serif; 
+    cursor: pointer; 
+    background-color: #fff;
+}
+
+.chart-section { margin-top: 40px; }
+
+.chart-title { text-align: center; margin-bottom: 10px; }
+
+.back-btn {
+    background-color: var(--header-color);
+    color: white; 
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 5px; 
+    font-size: 14px;
+    transition: background 0.3s;
+    margin-right: 10px;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.back-btn:hover { background-color: #303f9f; }
+
+@media (max-width: 768px) {
+    .section-header { flex-direction: column; gap: 15px; text-align: center; }
+    .section-header h1 { text-align: center; }
+}
