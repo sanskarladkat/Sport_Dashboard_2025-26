@@ -3,66 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MIT-WPU Sports</title>
-    
+    <title>MIT-WPU Sports & Gymkhana</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
-    
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index_style.css') }}">
 </head>
 <body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-fire"></i>
+                <span>MIT-WPU Sports</span>
+            </div>
+            <button class="scroll-btn" id="scrollBtn">
+                <i class="fas fa-arrow-down"></i>
+            </button>
+        </div>
+    </nav>
 
-    <header>
-        <h1>MIT-WPU Sports and Gymkhana Dashboard</h1>
-    </header>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1 class="hero-title">MIT-WPU Sports and Gymkhana</h1>
+                <p class="hero-subtitle">Explore Excellence, Celebrate Champions, Drive Innovation</p>
+                <div class="hero-stats">
+                    <div class="stat-box">
+                        <span class="stat-number">20+</span>
+                        <span class="stat-label">Sports Events</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number">350+</span>
+                        <span class="stat-label">Athletes</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number">30+</span>
+                        <span class="stat-label">Awards Won</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="hero-animation">
+            <div class="floating-ball b1"></div>
+            <div class="floating-ball b2"></div>
+            <div class="floating-ball b3"></div>
+        </div>
+    </section>
 
-    <div class="winners-section">
-        <h2>🌟 MIT-WPU SPORTS CHAMPIONS 🌟</h2>
-        <div class="slider-container">
+    <!-- Champions Showcase -->
+    <section class="winners-section">
+        <div class="section-header">
+            <h2>🏆 Champions Showcase</h2>
+            <p class="section-subtitle">Meet Our Sports Legends</p>
+        </div>
+        <div class="slider-container" id="sliderContainer">
             <div class="slider-track" id="sliderTrack">
                 {% if winner_images %}
                     {% for img in winner_images %}
                     <div class="slide">
-                        <img src="{{ url_for('static', filename='images/' + img) }}" alt="Winner">
+                        <div class="slide-image">
+                            <img src="{{ url_for('static', filename='images/' + img) }}" alt="Champion">
+                        </div>
+                        <div class="slide-overlay"></div>
                     </div>
                     {% endfor %}
+                {% else %}
+                    <div class="slide">
+                        <div class="slide-image">
+                            <div class="placeholder">No images yet</div>
+                        </div>
+                    </div>
                 {% endif %}
             </div>
+            <div class="slider-nav">
+                <button class="slider-btn prev" id="prevBtn"><i class="fas fa-chevron-left"></i></button>
+                <button class="slider-btn next" id="nextBtn"><i class="fas fa-chevron-right"></i></button>
+            </div>
         </div>
-    </div>
-    
-    <div class="nav-section">
+    </section>
+
+    <!-- Navigation Cards -->
+    <section class="nav-section">
+        <div class="section-header">
+            <h2>Quick Access</h2>
+            <p class="section-subtitle">Everything at your fingertips</p>
+        </div>
         <div class="nav-grid">
             <a href="/achievements" class="nav-card">
+                <div class="card-glow"></div>
                 <div class="nav-icon"><i class="fas fa-trophy"></i></div>
                 <div class="nav-title">Sports Achievements</div>
+                <div class="nav-arrow"><i class="fas fa-arrow-right"></i></div>
             </a>
-            <div class="nav-card" onclick="openAuthModal()">
-                <div class="nav-icon"><i class="fas fa-indian-rupee-sign"></i></div>
+            <div class="nav-card cursor-pointer" onclick="openAuthModal()">
+                <div class="card-glow"></div>
+                <div class="nav-icon"><i class="fas fa-chart-line"></i></div>
                 <div class="nav-title">Sports Budget</div>
+                <div class="nav-arrow"><i class="fas fa-arrow-right"></i></div>
             </div>
             <a href="/operations" class="nav-card">
-                <div class="nav-icon"><i class="fas fa-building"></i></div>
+                <div class="card-glow"></div>
+                <div class="nav-icon"><i class="fas fa-dumbbell"></i></div>
                 <div class="nav-title">Facilities Uses</div>
+                <div class="nav-arrow"><i class="fas fa-arrow-right"></i></div>
             </a>
             <a href="/staff-summit" class="nav-card">
+                <div class="card-glow"></div>
                 <div class="nav-icon"><i class="fas fa-users"></i></div>
                 <div class="nav-title">Staff Summit</div>
+                <div class="nav-arrow"><i class="fas fa-arrow-right"></i></div>
             </a>
             <a href="/inter_department" class="nav-card">
+                <div class="card-glow"></div>
                 <div class="nav-icon"><i class="fas fa-medal"></i></div>
                 <div class="nav-title">Inter-Dept Achievements</div>
+                <div class="nav-arrow"><i class="fas fa-arrow-right"></i></div>
             </a>
         </div>
-    </div>
+    </section>
 
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 MIT-WPU Sports & Gymkhana. All rights reserved.</p>
+    </footer>
+
+    <!-- Auth Modal -->
     <div id="authModal" class="modal">
         <div class="modal-content">
+            <button class="modal-close" onclick="document.getElementById('authModal').style.display='none'">
+                <i class="fas fa-times"></i>
+            </button>
             <div class="modal-lock-icon"><i class="fas fa-lock"></i></div>
-            <h2>Secure Access</h2>
-            <input type="password" id="authInput" class="auth-input" placeholder="••••">
-            <button onclick="checkPassword()" class="auth-submit">Verify</button>
-            <p class="modal-cancel-text" onclick="document.getElementById('authModal').style.display='none'">[ CANCEL ]</p>
+            <h2>Budget Access</h2>
+            <p class="modal-subtitle">Enter password to continue</p>
+            <input type="password" id="authInput" class="auth-input" placeholder="••••••••">
+            <button onclick="checkPassword()" class="auth-submit">Verify Access</button>
+            <p class="modal-cancel-text" onclick="document.getElementById('authModal').style.display='none'">Cancel</p>
         </div>
     </div>
 

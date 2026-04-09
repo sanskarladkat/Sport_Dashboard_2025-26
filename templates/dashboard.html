@@ -4,42 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sports Dashboard</title>
-    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_style.css') }}">
 </head>
 <body>
     <div class="container">
         <header>
-            <div class="header-left"><a href="/" class="back-btn"><i class="fas fa-chevron-left"></i> Home</a></div>
-            <h1>MIT-WPU Sports Achievements Dashboard (2025-26)</h1>
+            <div class="header-left"><a href="/" class="back-btn"><i class="fas fa-chevron-left"></i> Back</a></div>
+            <h1>🏆 MIT-WPU Sports Achievements (2025-26)</h1>
             <div class="header-right"></div>
         </header>
 
         <div class="top-row-grid">
             <div class="kpi-container">
-                <div class="kpi-card">
-                    <i class="fas fa-trophy kpi-icon"></i>
-                    <div><p class="value" id="totalAchievementsValue">0</p><p class="label"> Athletes Achievements</p></div>
-                </div>
-                <div class="kpi-card">
-                    <i class="fas fa-star kpi-icon"></i>
-                    <div><p class="value" id="totalPointsValue">0</p><p class="label">Total Points</p></div>
-                </div>
-                <div class="kpi-card">
-                    <i class="fas fa-running kpi-icon"></i>
-                    <div><p class="value" id="uniqueSportsValue">0</p><p class="label">Participated Sports</p></div>
-                </div>
+                <div class="kpi-card"><i class="fas fa-trophy kpi-icon"></i><div><p class="value" id="totalAchievementsValue">0</p><p class="label"> Athletes Participation</p></div></div>
+                <div class="kpi-card"><i class="fas fa-star kpi-icon"></i><div><p class="value" id="totalPointsValue">0</p><p class="label">    Total Points</p></div></div>
+                <div class="kpi-card"><i class="fas fa-running kpi-icon"></i><div><p class="value" id="uniqueSportsValue">0</p><p class="label">Participated Sports</p></div></div>
             </div>
             <div class="details-card">
-                <h3>Participants Details</h3>
-                <select id="schoolDropdown" class="school-select" onchange="loadParticipantsBySchool()">
-                    <option value="">Search School...</option>
-                    <option value="all">View Full Records</option>
-                </select>
+                <h3>Filter Records</h3>
+                <div class="filter-controls">
+                    <select id="schoolDropdown" class="school-select"><option value="all">All School Name</option></select>
+                    <select id="sportDropdown" class="school-select"><option value="all">All Sport Name</option></select>
+                </div>
+                <button onclick="loadFilteredParticipants()" class="show-list-btn">Show List</button>
             </div>
         </div>
 
@@ -70,16 +60,21 @@
         </div>
 
         <div class="list-section" id="listSection">
-            <h2 id="listTitle"></h2>
+            <div class="list-header">
+                <h2 id="listTitle" style="margin:0;">Participants List</h2>
+                <input type="text" id="studentSearch" class="search-input" onkeyup="searchTable()" placeholder="Search Student Name...">
+            </div>
             <div class="table-wrapper">
-                <table>
-                    <thead><tr><th>Student Name</th><th>School Name</th><th>Achievement</th><th>Sport</th><th>Venue</th><th>Result</th></tr></thead>
+                <table id="participantTable">
+                    <thead><tr><th>Sr. No</th><th>Student Name</th><th>School Name</th><th>Achievement</th><th>Sport</th><th>Venue</th><th>Result</th></tr></thead>
                     <tbody id="participantTableBody"></tbody>
                 </table>
             </div>
+            <div class="excel-download-container">
+                <button onclick="downloadExcel()" class="excel-btn"><i class="fas fa-file-excel"></i> Download List Excel</button>
+            </div>
         </div>
     </div>
-
     <script src="{{ url_for('static', filename='js/dashboard_script.js') }}"></script>
 </body>
 </html>

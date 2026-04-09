@@ -240,8 +240,8 @@ header h1 {
     font-size: 1.1rem;
 }
 
-.sport-badge:nth-child(2)::before { content: '🎾'; }
-.sport-badge:nth-child(3)::before { content: '♟️'; }
+.sport-badge:nth-child(2)::before { content: '♟️'; }
+.sport-badge:nth-child(3)::before { content: '🏊'; }
 .sport-badge:nth-child(4)::before { content: '🏐'; }
 .sport-badge:nth-child(5)::before { content: '🏸'; }
 .sport-badge:nth-child(6)::before { content: '🏏'; }

@@ -109,10 +109,15 @@ def get_data():
 @app.route('/api/participants_by_school')
 def get_participants_by_school():
     school_name = request.args.get('school')
+    sport_name = request.args.get('sport')
     try:
         df = get_dataframe_by_sheet_name(0) 
         if school_name and school_name != 'all':
             df = df[df['School'] == school_name]
+            
+        if sport_name and sport_name != 'all':
+            df = df[df['Sport'].str.strip().str.title() == sport_name.strip().title()]
+            
         result = df[['NAME OF STUDENT', 'School', 'RESULTS', 'Sport', 'VENUE', 'Rank']].drop_duplicates()
         return jsonify(result.to_dict(orient='records'))
     except Exception as e: return jsonify({"error": str(e)}), 500
