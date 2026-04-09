@@ -11,6 +11,12 @@ async function loadData() {
     document.getElementById('kpiSports').innerText = data.kpiMetrics.uniqueSports;
     document.getElementById('kpiParticipants').innerText = data.kpiMetrics.totalParticipants;
 
+    // Populate sports list
+    const sportsContainer = document.getElementById('sportsListContainer');
+    sportsContainer.innerHTML = sportsDataGlobal.labels.map((sport, index) => {
+        return `<div class="sport-badge" title="${sport} (${sportsDataGlobal.series[index]} participants)">${sport}</div>`;
+    }).join('');
+
     const barOptions = (labels, seriesData) => ({
         chart: { type: 'bar', height: 350, toolbar: { show: true } },
         plotOptions: { bar: { horizontal: true, distributed: true, barHeight: '70%' } },
@@ -19,7 +25,7 @@ async function loadData() {
         yaxis: {
             labels: {
                 show: true,
-                maxWidth: 220   
+                maxWidth: 220
             }
         },
         legend: { show: false }
@@ -27,7 +33,7 @@ async function loadData() {
 
     new ApexCharts(document.querySelector("#schoolParticipantsChart"), barOptions(data.schoolParticipants.map(i => i.School), data.schoolParticipants.map(i => i.Participants))).render();
     new ApexCharts(document.querySelector("#schoolPointsChart"), barOptions(data.schoolPoints.map(i => i.School), data.schoolPoints.map(i => i.Points))).render();
-    
+
     updateSportsView('chart');
 }
 

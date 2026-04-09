@@ -19,10 +19,19 @@
         </header>
 
         <div class="top-row-grid">
-            <div class="kpi-container">
-                <div class="kpi-card"><p class="value" id="kpiParticipants">0</p><p class="label">Total Participants</p></div>
-                <div class="kpi-card"><p class="value" id="kpiPoints">0</p><p class="label">Total Points</p></div>
-                <div class="kpi-card"><p class="value" id="kpiSports">0</p><p class="label">Participated Sports</p></div>
+            <div class="kpi-wrapper">
+                <div class="kpi-container">
+                    <div class="kpi-card"><p class="value" id="kpiParticipants">0</p><p class="label">Total Participants</p></div>
+                    <div class="kpi-card"><p class="value" id="kpiPoints">0</p><p class="label">Total Points</p></div>
+                    <div class="kpi-card"><p class="value" id="kpiSports">0</p><p class="label">Participated Sports</p></div>
+                </div>
+
+                <div class="sports-list-card">
+                    <h3>Sports Participated</h3>
+                    <div class="sports-grid" id="sportsListContainer">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
             </div>
 
             <div class="sidebar-card">
