@@ -244,16 +244,8 @@ The application includes a `Procfile` for seamless Heroku deployment.
 
 Contributions are welcome! Please feel free to submit issues and enhancement requests.
 
-## 📄 **License**
-
-This project is licensed under the MIT License - see LICENSE file for details.
 
 ## 📧 **Contact**
 
-For questions or support, please contact the development team.
-
----
-
-**Last Updated:** May 2026  
-**Version:** 2025-26  
-**Status:** Active Development
+Sanskar Ladkat
+Email: ladkatsanskar@gmail.com
