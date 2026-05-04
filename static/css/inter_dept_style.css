@@ -235,19 +235,9 @@ header h1 {
     background: linear-gradient(135deg, #fd7e14 0%, #cc6410 100%);
 }
 
-.sport-badge::before {
-    content: '⚽';
-    font-size: 1.1rem;
+.sport-badge:nth-child(5n) {
+    background: linear-gradient(135deg, #6f42c1 0%, #5936a2 100%);
 }
-
-.sport-badge:nth-child(2)::before { content: '♟️'; }
-.sport-badge:nth-child(3)::before { content: '🏊'; }
-.sport-badge:nth-child(4)::before { content: '🏐'; }
-.sport-badge:nth-child(5)::before { content: '🏸'; }
-.sport-badge:nth-child(6)::before { content: '🏏'; }
-.sport-badge:nth-child(7)::before { content: '⛳'; }
-.sport-badge:nth-child(8)::before { content: '🏊'; }
-.sport-badge:nth-child(9)::before { content: '🏃'; }
 
 .sidebar-card {
     background: var(--card-color);
