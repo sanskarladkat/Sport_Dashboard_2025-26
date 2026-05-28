@@ -1,9 +1,10 @@
 let currentListData = [];
 let sportsDataGlobal = null;
-let sportsChartInstance = null;
+let charts = {}; // Object mapping to maintain multiple chart instances cleanly
 
-async function loadData() {
-    const res = await fetch('/api/inter_department_data');
+// Modified to accept dynamic sheet parameter
+async function loadData(sheetName = 'Inter_department_2025-26') {
+    const res = await fetch(`/api/inter_department_data?sheet=${encodeURIComponent(sheetName)}`);
     const data = await res.json();
     sportsDataGlobal = data.sportsParticipated;
 
@@ -31,8 +32,15 @@ async function loadData() {
         legend: { show: false }
     });
 
-    new ApexCharts(document.querySelector("#schoolParticipantsChart"), barOptions(data.schoolParticipants.map(i => i.School), data.schoolParticipants.map(i => i.Participants))).render();
-    new ApexCharts(document.querySelector("#schoolPointsChart"), barOptions(data.schoolPoints.map(i => i.School), data.schoolPoints.map(i => i.Points))).render();
+    // Destroy prior chart instances safely before rendering new timeline datasets
+    if (charts.schoolParticipants) charts.schoolParticipants.destroy();
+    if (charts.schoolPoints) charts.schoolPoints.destroy();
+
+    charts.schoolParticipants = new ApexCharts(document.querySelector("#schoolParticipantsChart"), barOptions(data.schoolParticipants.map(i => i.School), data.schoolParticipants.map(i => i.Participants)));
+    charts.schoolPoints = new ApexCharts(document.querySelector("#schoolPointsChart"), barOptions(data.schoolPoints.map(i => i.School), data.schoolPoints.map(i => i.Points)));
+    
+    charts.schoolParticipants.render();
+    charts.schoolPoints.render();
 
     updateSportsView('chart');
 }
@@ -50,21 +58,26 @@ function updateSportsView(type) {
     const btnChart = document.getElementById('btnSportsChart');
     const btnList = document.getElementById('btnSportsList');
     const container = document.getElementById('sportsViewContainer');
-    if (sportsChartInstance) sportsChartInstance.destroy();
+    
+    if (charts.sportsView) charts.sportsView.destroy();
     container.innerHTML = "";
     
     if (type === 'chart') {
         btnChart.classList.add('active'); btnList.classList.remove('active');
-        sportsChartInstance = new ApexCharts(container, { chart: { type: 'pie', height: 400 }, series: sportsDataGlobal.series, labels: sportsDataGlobal.labels, legend: { position: 'bottom' } });
+        charts.sportsView = new ApexCharts(container, { chart: { type: 'pie', height: 400 }, series: sportsDataGlobal.series, labels: sportsDataGlobal.labels, legend: { position: 'bottom' } });
     } else {
         btnList.classList.add('active'); btnChart.classList.remove('active');
-        sportsChartInstance = new ApexCharts(container, { chart: { type: 'bar', height: 400 }, plotOptions: { bar: { horizontal: true, distributed: true } }, series: [{ data: sportsDataGlobal.series }], xaxis: { categories: sportsDataGlobal.labels }, legend: { show: false } });
+        charts.sportsView = new ApexCharts(container, { chart: { type: 'bar', height: 400 }, plotOptions: { bar: { horizontal: true, distributed: true } }, series: [{ data: sportsDataGlobal.series }], xaxis: { categories: sportsDataGlobal.labels }, legend: { show: false } });
     }
-    sportsChartInstance.render();
+    charts.sportsView.render();
 }
 
 async function showParticipantList(type) {
-    const res = await fetch(`/api/inter_dept_participants?type=${type}`);
+    // Collect selected year to filter tabular metadata accurately
+    const yearSelect = document.getElementById('yearSelect');
+    const currentSheet = yearSelect ? yearSelect.value : 'Inter_department_2025-26';
+
+    const res = await fetch(`/api/inter_dept_participants?type=${type}&sheet=${encodeURIComponent(currentSheet)}`);
     currentListData = await res.json();
     document.getElementById("studentSearch").value = "";
     const tableBody = document.getElementById('participantTableBody');
@@ -101,4 +114,28 @@ function downloadExcel() {
     link.click();
 }
 
-document.addEventListener('DOMContentLoaded', loadData);
+// Event hooks setup tracking execution configuration shifts
+document.addEventListener('DOMContentLoaded', () => {
+    const yearSelect = document.getElementById('yearSelect');
+    
+    // Initial data pipeline execution
+    loadData(yearSelect.value || 'Inter_department_2025-26');
+
+    // Trigger update lifecycle adjustments upon change input captures
+    yearSelect.addEventListener('change', (e) => {
+        const selectedSheet = e.target.value;
+        const headingTitle = document.getElementById('interDeptTitle');
+        if (headingTitle) {
+            const parsedDisplayYear = selectedSheet.includes('2026-27') ? '2026-27' : '2025-26';
+            headingTitle.innerText = `MIT-WPU Inter-Departmental Achievements (${parsedDisplayYear})`;
+        }
+        
+        // Reset underlying data context components
+        document.getElementById('participantTableBody').innerHTML = '<tr><td colspan="5" class="empty-state">Select a filter from the sidebar to load details.</td></tr>';
+        document.getElementById('excelBtn').style.display = 'none';
+        document.getElementById('listTitle').innerText = 'Participants Details';
+        document.getElementById('studentSearch').value = '';
+
+        loadData(selectedSheet);
+    });
+});

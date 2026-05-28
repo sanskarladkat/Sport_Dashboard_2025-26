@@ -17,12 +17,41 @@
     <div class="container">
         <a href="/" class="back-btn">← Back to Home</a>
         <div class="section-header">
-            <h1 id="reportTitle">MIT-WPU Monthly Sports Operations Report</h1>
-            <div class="selector-group">
-                <label for="monthSelector" class="selector-label">Select Month:</label>
-                <select id="monthSelector" onchange="fetchAndRenderOperations(this.value)">
-                    <option value="" disabled selected>Loading...</option>
+            <div class="header-wrapper">
+                <h1 id="reportTitle">MIT-WPU Sports Operations Report 2025-26</h1>
+                <select id="yearSelect" class="year-select">
+                    <option value="Facility_2025-26">2025-26</option>
+                    <option value="Facility_2026-27">2026-27</option>
                 </select>
+            </div>
+            <hr class="section-sep" />
+            <div class="selector-row">
+                <div class="selector-group">
+                    <label for="monthSelector" class="selector-label">Select Month:</label>
+                    <select id="monthSelector" onchange="fetchAndRenderOperations(this.value)">
+                        <option value="" disabled selected>Loading...</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="kpi-row" id="kpiRow">
+            <div class="kpi-card">
+                <div class="kpi-label">Total Available Booking</div>
+                <div class="kpi-value" id="totalAvailable">—</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Total Booked</div>
+                <div class="kpi-value" id="totalUtilized">—</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Active Sports</div>
+                <div class="kpi-value" id="totalSports">—</div>
+            </div>
+            <div class="kpi-donut-card">
+                <div class="kpi-label">Overall Utilization</div>
+                <div id="utilDonut" style="width:140px;height:120px;margin:6px auto 0"></div>
+                <div class="kpi-sub" id="utilPct">—</div>
             </div>
         </div>
 

@@ -1,34 +1,54 @@
 let charts = {};
 let globalDashboardData = null;
-let currentListData = []; 
+let currentListData = [];
 
-async function fetchData() {
+function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('visible');
+}
+
+function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.remove('visible');
+}
+
+async function fetchData(sheetName = 'Achievement_2025-26') {
+    showLoading();
     try {
-        const response = await fetch('/api/data');
+        // request specific sheet data (backend will use sheet name)
+        const response = await fetch(`/api/data?sheet=${encodeURIComponent(sheetName)}`);
         const data = await response.json();
         globalDashboardData = data;
-        
+
         document.getElementById('totalAchievementsValue').innerText = data.kpiMetrics.totalAchievements;
         document.getElementById('totalPointsValue').innerText = data.kpiMetrics.totalPoints;
         document.getElementById('uniqueSportsValue').innerText = data.kpiMetrics.uniqueSports;
-        
+
         const schoolDrop = document.getElementById('schoolDropdown');
         const sportDrop = document.getElementById('sportDropdown');
-        
+
+        // clear previous options
+        schoolDrop.innerHTML = '<option value="all">All School Name</option>';
+        sportDrop.innerHTML = '<option value="all">All Sport Name</option>';
+
         data.schoolParticipation.forEach(item => {
             const opt = document.createElement('option');
             opt.value = item.School; opt.innerHTML = item.School;
             schoolDrop.appendChild(opt);
         });
 
-        data.sportsPie.labels.forEach(sport => {
+        (data.sportsPie && data.sportsPie.labels || []).forEach(sport => {
             const opt = document.createElement('option');
             opt.value = sport; opt.innerHTML = sport;
             sportDrop.appendChild(opt);
         });
-        
+
         renderDashboard(data);
-    } catch (error) { console.error("Error fetching data:", error); }
+    } catch (error) {
+        console.error("Error fetching data:", error);
+    } finally {
+        hideLoading();
+    }
 }
 
 async function loadFilteredParticipants() {
@@ -62,6 +82,25 @@ async function loadFilteredParticipants() {
     } catch (err) { console.error(err); }
 }
 
+// Year selector listener
+document.addEventListener('DOMContentLoaded', () => {
+    const yearSelect = document.getElementById('yearSelect');
+    // initial load - default 2025-26
+    fetchData(yearSelect.value || 'Achievement_2025-26');
+
+    yearSelect.addEventListener('change', (e) => {
+        const sheet = e.target.value;
+        // update header title
+        const title = document.getElementById('dashboardTitle');
+        if (title) {
+            const displayYear = sheet.includes('2026') ? '2026-27' : '2025-26';
+            title.innerText = `🏆 MIT-WPU Sports Achievements (${displayYear})`;
+        }
+        // fetch data for selected sheet
+        fetchData(sheet);
+    });
+});
+
 function searchTable() {
     const query = document.getElementById('studentSearch').value.toLowerCase();
     const rows = document.querySelectorAll('#participantTableBody tr');
@@ -89,17 +128,19 @@ function renderDashboard(data) {
     charts = {};
 
     // Gender 
-    charts.gender = new ApexCharts(document.querySelector("#genderDistributionChart"), {
+    const genderChart = new ApexCharts(document.querySelector("#genderDistributionChart"), {
         series: data.genderDistribution.series, labels: data.genderDistribution.labels,
         chart: { type: 'donut', height: 400 }, colors: ['#0e6cf0', '#07ed4c'],
         legend: { position: 'bottom' },
         plotOptions: { pie: { donut: { labels: { show: true, total: { show: true } } } } }
-    }).render();
+    });
+    charts.gender = genderChart;
+    genderChart.render();
 
     // Bar 
     const barConfig = (element, title, vals, categories) => {
-        const maxVal = Math.max(...vals);
-        new ApexCharts(document.querySelector(element), {
+        const maxVal = Math.max(...vals, 0);
+        const chart = new ApexCharts(document.querySelector(element), {
             series: [{ name: title, data: vals }],
             chart: { type: 'bar', height: 450, toolbar: { show: false } },
             plotOptions: { bar: { horizontal: true, distributed: true, dataLabels: { position: 'top' } } },
@@ -107,11 +148,15 @@ function renderDashboard(data) {
             yaxis: { labels: { maxWidth: 250, style: { fontSize: '12px' } } },
             legend: { show: false },
             dataLabels: { enabled: true, textAnchor: 'start', offsetX: 10, style: { colors: ['#333'], fontSize: '13px' } }
-        }).render();
+        });
+        chart.render();
+        return chart;
     };
 
-    barConfig("#schoolParticipationChart", "Participants", data.schoolParticipation.map(i => i.Achievements), data.schoolParticipation.map(i => i.School));
-    barConfig("#schoolPointsChart", "Points", data.schoolPoints.map(i => i.Points), data.schoolPoints.map(i => i.School));
+    const participationChart = barConfig("#schoolParticipationChart", "Participants", data.schoolParticipation.map(i => i.Achievements), data.schoolParticipation.map(i => i.School));
+    const pointsChart = barConfig("#schoolPointsChart", "Points", data.schoolPoints.map(i => i.Points), data.schoolPoints.map(i => i.School));
+    charts.schoolParticipation = participationChart;
+    charts.schoolPoints = pointsChart;
 
     updateSportsPieView('chart');
     updateAchievementsView('chart');
@@ -223,4 +268,4 @@ function updateAchievementsView(type) {
     charts.achPie.render();
 }
 
-document.addEventListener('DOMContentLoaded', fetchData);
+// Initial load is handled by the year selector listener above.

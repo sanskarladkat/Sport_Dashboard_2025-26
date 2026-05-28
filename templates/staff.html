@@ -14,12 +14,19 @@
 <div class="container">
     <header class="header-row">
         <a href="/" class="back-btn">← Back to Home</a>
-        <h1 class="main-title">MIT-WPU Staff Summit Performance Overview</h1>
-        <div style="width: 120px;"></div>
+        <h1 id="staffTitle" class="main-title">MIT-WPU Staff Summit Performance Overview (2025-26)</h1>
+        <div class="header-right">
+            <label for="yearSelect" class="year-label" style="margin-right:8px; font-weight:600; color: var(--header-color);">Select Year</label>
+            <select id="yearSelect" class="year-select" style="padding: 8px 12px; border-radius: 8px; border: 2px solid var(--header-color); font-family: 'Poppins'; font-size: 13px; font-weight: 600; color: var(--header-color); outline: none; cursor: pointer;">
+                <option value="Staff_Summit_2025-26" selected>2025-26</option>
+                <option value="Staff_Summit_2026-27">2026-27</option>
+            </select>
+        </div>
     </header>
     
     <div class="top-grid">
-        <div class="kpi-card"><h3>Total Participation</h3><h2 id="totalAch">0</h2></div>
+        <div class="kpi-card"><h3>Total Participants</h3><h2 id="totalParticipants">0</h2></div>
+        <div class="kpi-card"><h3>Participated Sports</h3><h2 id="totalSports">0</h2></div>
         <div class="kpi-card"><h3>Total Points</h3><h2 id="totalPts">0</h2></div>
         
         <div class="kpi-card sidebar-card">
@@ -45,6 +52,7 @@
                         <th>Faculty Name</th>
                         <th>Department Name</th>
                         <th>Gender</th>
+                        <th>Sport</th>
                         <th>Event</th>
                         <th>Result</th>
                     </tr>
@@ -52,7 +60,7 @@
                 <tbody id="winnerTableBody"></tbody>
             </table>
         </div>
-        <button id="downloadBtn" class="excel-btn" onclick="downloadExcel()">Download Winners List (Excel)</button>
+        <button id="downloadBtn" class="excel-btn" onclick="downloadExcel()">Download Winners List</button>
     </div>
 </div>
 

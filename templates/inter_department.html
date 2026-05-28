@@ -13,9 +13,17 @@
 <body>
     <div class="container">
         <header>
-            <a href="/" class="back-btn">← Back to Home</a>
-            <h1>MIT-WPU Inter-Department Achievements</h1>
-            <div style="width: 100px;"></div>
+            <div class="header-left">
+                <a href="/" class="back-btn">← Back to Home</a>
+            </div>
+            <h1 id="interDeptTitle">MIT-WPU Inter-Departmental Achievements (2025-26)</h1>
+            <div class="header-right">
+                <label for="yearSelect" class="year-label" style="margin-right:8px; font-weight:600; color: var(--header-color);">Select Year</label>
+                <select id="yearSelect" class="year-select" style="padding: 8px 12px; border-radius: 8px; border: 2px solid var(--header-color); font-family: 'Poppins'; font-size: 13px; font-weight: 600; color: var(--header-color); outline: none; cursor: pointer;">
+                    <option value="Inter_department_2025-26" selected>2025-26</option>
+                    <option value="Inter_department_2026-27">2026-27</option>
+                </select>
+            </div>
         </header>
 
         <div class="top-row-grid">
@@ -76,7 +84,7 @@
                     </tbody>
                 </table>
             </div>
-            <button id="excelBtn" class="excel-btn" onclick="downloadExcel()">Download Excel</button>
+            <button id="excelBtn" class="excel-btn" onclick="downloadExcel()">Download List</button>
         </div>
     </div>
 

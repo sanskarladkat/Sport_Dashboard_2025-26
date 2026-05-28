@@ -11,10 +11,19 @@
 </head>
 <body>
     <div class="container">
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-spinner"></div>
+        </div>
         <header>
             <div class="header-left"><a href="/" class="back-btn"><i class="fas fa-chevron-left"></i> Back</a></div>
-            <h1>🏆 MIT-WPU Sports Achievements (2025-26)</h1>
-            <div class="header-right"></div>
+            <h1 id="dashboardTitle">🏆 MIT-WPU Sports Achievements (2025-26)</h1>
+            <div class="header-right">
+                <label for="yearSelect" class="year-label" style="margin-right:8px; font-weight:600;">Select Year</label>
+                <select id="yearSelect" class="year-select">
+                    <option value="Achievement_2025-26" selected>2025-26</option>
+                    <option value="Achievement_2026-27">2026-27</option>
+                </select>
+            </div>
         </header>
 
         <div class="top-row-grid">

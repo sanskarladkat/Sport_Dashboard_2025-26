@@ -36,7 +36,39 @@ body {
     50% { transform: scale(1.02); }
 }
 
-.container { max-width: 1600px; margin: auto; display: flex; flex-direction: column; gap: 25px; }
+.container { position: relative; max-width: 1600px; margin: auto; display: flex; flex-direction: column; gap: 25px; }
+
+.loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+    z-index: 50;
+}
+
+.loading-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 6px solid rgba(255, 255, 255, 0.2);
+    border-top-color: #38bdf8;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
 
 header {
     background: var(--card-bg);

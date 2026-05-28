@@ -178,7 +178,7 @@ header h1 {
     border-radius: 12px;
     box-shadow: 0 4px 15px var(--shadow-color);
     animation: fadeInUp 0.8s ease-out;
-    border-top: 4px solid var(--success-color);
+    
 }
 
 .sports-list-card h3 {
@@ -245,7 +245,6 @@ header h1 {
     border-radius: 12px;
     box-shadow: 0 4px 15px var(--shadow-color);
     text-align: center;
-    border-left: 4px solid #FFD700;
     animation: fadeInUp 0.9s ease-out;
     transition: all 0.3s ease;
 }
@@ -295,7 +294,6 @@ header h1 {
     box-shadow: 0 4px 15px var(--shadow-color);
     min-height: 380px;
     transition: all 0.3s ease;
-    border-top: 4px solid var(--info-color);
     animation: fadeInUp 1s ease-out;
 }
 

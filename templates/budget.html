@@ -14,11 +14,33 @@
 </head>
 <body>
     <div class="container">
-        <a href="/" class="back-btn">← Back to Home</a>
-        <h1>MIT-WPU Physical Education & Sports</h1>
+        <div class="header-wrapper">
+            <a href="/" class="back-btn">← Back to Home</a>
+            <h1 id="budgetTitle">MIT-WPU Sports and Gymkhana 2025-26</h1>
+            <div class="year-selector-wrapper">
+                <label for="budgetYearSelect" style="font-weight:600; margin-right:8px;">Select Year</label>
+                <select id="budgetYearSelect" class="year-select">
+                    <option value="budget_2025-26" selected>2025-26</option>
+                    <option value="budget_2026-27">2026-27</option>
+                </select>
+            </div>
+        </div>
         
-        <h2 class="sub-header">Budget Utilization 2025-26</h2>
-        <h3 class="total-budget-label">Total Budget: ₹ 98,99,668</h3>
+        <!-- KPI Cards -->
+        <div class="kpi-section">
+            <div class="kpi-card">
+                <h4 class="kpi-label">Total Budget</h4>
+                <p class="kpi-value" id="kpiTotalBudget">₹ 0</p>
+            </div>
+            <div class="kpi-card">
+                <h4 class="kpi-label">Utilized Budget</h4>
+                <p class="kpi-value" id="kpiUtilizedBudget">₹ 0</p>
+            </div>
+            <div class="kpi-card">
+                <h4 class="kpi-label">Remaining Budget</h4>
+                <p class="kpi-value" id="kpiRemainingBudget">₹ 0</p>
+            </div>
+        </div>
         
         <div class="chart-section">
             <h3 class="chart-title">Total Budget Utilization</h3>

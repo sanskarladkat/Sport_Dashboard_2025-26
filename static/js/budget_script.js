@@ -1,18 +1,48 @@
-async function fetchAndRenderBudget() {
-    try {
-        const response = await fetch('/api/budget');
-        const data = await response.json();
+let charts = {};
 
-        const actualSpendList = data.series.find(s => s.name === 'Actual Spend').data;
-        const unutilizedList = data.series.find(s => s.name === 'Unutilized Amount').data;
+async function fetchAndRenderBudget(sheetName = 'budget_2025-26') {
+    try {
+        console.log(`[BUDGET] Fetching from sheet: ${sheetName}`);
+        const url = `/api/budget?sheet=${encodeURIComponent(sheetName)}`;
+        console.log(`[BUDGET] Request URL: ${url}`);
+        const response = await fetch(url);
+        const data = await response.json();
+        console.log(`[BUDGET] Response received - Sheet: ${data.sheet}, Categories: ${data.categories ? data.categories.length : 0}`);
+
+        // Check for error response
+        if (data.error || !data.series) {
+            console.error("Error from API:", data.error || "Invalid data structure");
+            alert("Error loading budget data: " + (data.error || "Invalid response"));
+            return;
+        }
+
+        // Update page title based on returned sheet (if provided)
+        if (data.sheet) {
+            const titleEl = document.getElementById('budgetTitle');
+            if (titleEl) {
+                const displayYear = data.sheet.includes('2026') ? '2026-27' : '2025-26';
+                console.log(`[BUDGET] Updating title to: ${displayYear}`);
+                titleEl.innerText = `MIT-WPU Sports and Gymkhana ${displayYear}`;
+            }
+        }
+
+        const actualSpendList = (data.series.find(s => s.name === 'Actual Spend') || {data: []}).data || [];
+        const unutilizedList = (data.series.find(s => s.name === 'Unutilized Amount') || {data: []}).data || [];
         
         const totalActual = actualSpendList.reduce((a, b) => a + b, 0);
         const totalUnutilized = unutilizedList.reduce((a, b) => a + b, 0);
+        const totalBudget = totalActual + totalUnutilized;
+
+        // Update KPI cards
+        document.getElementById('kpiTotalBudget').textContent = '₹ ' + totalBudget.toLocaleString('en-IN', {maximumFractionDigits: 0});
+        document.getElementById('kpiUtilizedBudget').textContent = '₹ ' + totalActual.toLocaleString('en-IN', {maximumFractionDigits: 0});
+        document.getElementById('kpiRemainingBudget').textContent = '₹ ' + totalUnutilized.toLocaleString('en-IN', {maximumFractionDigits: 0});
 
         const rowTotals = actualSpendList.map((val, i) => val + unutilizedList[i]);
         const maxBudgetVal = Math.max(...rowTotals);
 
         //Total Utilization
+        if (charts.totalUtil) charts.totalUtil.destroy();
         const totalUtilOptions = {
             series: [
                 { name: 'Consumed', data: [totalActual] }, 
@@ -25,10 +55,14 @@ async function fetchAndRenderBudget() {
             tooltip: { y: { formatter: (val) => "₹ " + val.toLocaleString() } },
             legend: { position: 'top' }
         };
-        new ApexCharts(document.querySelector("#totalUtilizationChart"), totalUtilOptions).render();
+        charts.totalUtil = new ApexCharts(document.querySelector("#totalUtilizationChart"), totalUtilOptions);
+        charts.totalUtil.render();
 
         //Pie Chart
-        const totalPerCategory = data.categories.map((cat, i) => data.series[0].data[i] + data.series[1].data[i]);
+        if (charts.pie) charts.pie.destroy();
+        const s0 = (data.series[0] && data.series[0].data) || [];
+        const s1 = (data.series[1] && data.series[1].data) || [];
+        const totalPerCategory = data.categories.map((cat, i) => (s0[i] || 0) + (s1[i] || 0));
         const pieOptions = {
             series: totalPerCategory, 
             labels: data.categories,
@@ -37,9 +71,14 @@ async function fetchAndRenderBudget() {
             tooltip: { y: { formatter: (val) => "₹ " + val.toLocaleString() } }, 
             theme: { mode: 'light' }
         };
-        new ApexCharts(document.querySelector("#budgetPieChart"), pieOptions).render();
+        charts.pie = new ApexCharts(document.querySelector("#budgetPieChart"), pieOptions);
+        charts.pie.render();
 
-        //Bar Chart
+        //Bar Chart - Fixed for better small-bar visibility
+        if (charts.stack) charts.stack.destroy();
+        const numCategories = data.categories.length;
+        const dynamicHeight = Math.max(400, numCategories * 50); // Scale height based on number of bars
+        
         const stackOptions = {
             series: [
                 { name: 'Consumed', data: actualSpendList },
@@ -47,7 +86,7 @@ async function fetchAndRenderBudget() {
             ],
             chart: { 
                 type: 'bar', 
-                height: 600, 
+                height: dynamicHeight, 
                 stacked: true, 
                 toolbar: { show: false } 
             }, 
@@ -58,7 +97,7 @@ async function fetchAndRenderBudget() {
             plotOptions: { 
                 bar: { 
                     horizontal: true, 
-                    barHeight: '60%', 
+                    barHeight: '80%',  // Increased from 60% for better visibility
                     dataLabels: { total: { enabled: true, offsetX: 10, style: { fontSize: '12px', fontWeight: 700, color: '#333' } } } 
                 } 
             },
@@ -78,11 +117,26 @@ async function fetchAndRenderBudget() {
             tooltip: { y: { formatter: (val) => "₹ " + val.toLocaleString() } }, 
             legend: { position: 'top' }
         };
-        new ApexCharts(document.querySelector("#budgetStackChart"), stackOptions).render();
+        charts.stack = new ApexCharts(document.querySelector("#budgetStackChart"), stackOptions);
+        charts.stack.render();
 
     } catch (error) {
         console.error("Error loading budget data:", error);
+        alert("Failed to load budget data. Check console for details.");
     }
 }
 
-document.addEventListener('DOMContentLoaded', fetchAndRenderBudget);
+document.addEventListener('DOMContentLoaded', () => {
+    const yearSelect = document.getElementById('budgetYearSelect');
+    fetchAndRenderBudget(yearSelect.value || 'budget_2025-26');
+
+    yearSelect.addEventListener('change', (e) => {
+        const sheet = e.target.value;
+        const title = document.getElementById('budgetTitle');
+        if (title) {
+            const displayYear = sheet.includes('2026') ? '2026-27' : '2025-26';
+            title.innerText = `MIT-WPU Sports and Gymkhana ${displayYear}`;
+        }
+        fetchAndRenderBudget(sheet);
+    });
+});

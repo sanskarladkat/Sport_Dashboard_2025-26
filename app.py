@@ -52,6 +52,7 @@ def normalize_columns(df):
         elif 'sr' in c_lower and 'no' in c_lower: new_cols[col] = 'SR. NO'
         elif 'event' in c_lower or 'category' in c_lower: new_cols[col] = 'Event'
         elif 'rank' in c_lower: new_cols[col] = 'Rank'
+        elif 'participant' in c_lower: new_cols[col] = 'Participants'
     return df.rename(columns=new_cols)
 
 #LANDING PAGE
@@ -68,12 +69,16 @@ def index():
 @app.route('/achievements')
 def achievements_page(): 
     return render_template('dashboard.html')
+def achievements_page(): 
+    return render_template('dashboard.html')
 
 @app.route('/api/data')
 @cache.cached(timeout=300, query_string=True) 
 def get_data():
     try:
-        df = get_dataframe_by_sheet_name(0)
+        # Allow selecting a sheet via query param `sheet` (default to Achievement_2025-26)
+        sheet_param = request.args.get('sheet', 'Achievement_2025-26')
+        df = get_dataframe_by_sheet_name(sheet_param)
         if df.empty: return jsonify({"error": "No data"}), 500
         
         if 'Sport' in df.columns: df['Sport'] = df['Sport'].str.strip().str.title()
@@ -128,22 +133,55 @@ def budget_page():
     return render_template('budget.html')
 
 @app.route('/api/budget')
-@cache.cached(timeout=300)
 def get_budget_data():
     try:
+        sheet_param = request.args.get('sheet', 'budget_2025-26')
+        print(f"[BUDGET API] Fetching sheet: {sheet_param}")
         client = get_gspread_client()
-        url = 'https://docs.google.com/spreadsheets/d/1y0z3-WJrWZodXKzVcxTipmUA8zTXr8X-NmGXoUDB4Fw/edit'
+        url = 'https://docs.google.com/spreadsheets/d/1YiXrlu6qxtorsoDThvB62HTVSuWE9BhQ9J-pbFH6dGc/edit'
         spreadsheet = client.open_by_url(url)
-        df = pd.DataFrame(spreadsheet.sheet1.get_all_records())
         
-        for col in ['Actual Spend', 'Unutilized Amount']:
-            df[col] = pd.to_numeric(df[col].astype(str).str.replace(r'[^\d.]', '', regex=True), errors='coerce').fillna(0)
+        try:
+            sheet = spreadsheet.worksheet(sheet_param)
+        except Exception:
+            print(f"Sheet '{sheet_param}' not found, using sheet1 as fallback")
+            sheet = spreadsheet.sheet1
+        
+        df = pd.DataFrame(sheet.get_all_records())
+        
+        if df.empty:
+            return jsonify({"error": "No data in sheet", "sheet": sheet_param}), 400
             
-        return jsonify({
-            'categories': df['Description'].tolist(),
-            'series': [{'name': 'Actual Spend', 'data': df['Actual Spend'].tolist()}, {'name': 'Unutilized Amount', 'data': df['Unutilized Amount'].tolist()}]
-        })
-    except Exception as e: return jsonify({"error": str(e)}), 500
+        # Standardize column headers to avoid runtime KeyErrors due to casing differences
+        df.columns = df.columns.str.strip()
+        
+        # Safe structural type conversion logic handling strings, currency markers, and "nan" strings safely
+        for col in ['Actual Spend', 'Unutilized Amount']:
+            if col in df.columns:
+                # Replace literal nan strings with zero before applying character stripping regex
+                cleaned_series = df[col].astype(str).str.replace('nan', '0', case=False)
+                cleaned_series = cleaned_series.str.replace(r'[^\d.]', '', regex=True)
+                df[col] = pd.to_numeric(cleaned_series, errors='coerce').fillna(0)
+            else:
+                # Create the series matching structural design if missing in source
+                df[col] = 0.0
+
+        # Description header validation checks
+        desc_col = 'Description' if 'Description' in df.columns else df.columns[0]
+        
+        result = {
+            'sheet': sheet_param,
+            'categories': df[desc_col].astype(str).tolist(),
+            'series': [
+                {'name': 'Actual Spend', 'data': df['Actual Spend'].tolist()}, 
+                {'name': 'Unutilized Amount', 'data': df['Unutilized Amount'].tolist()}
+            ]
+        }
+        print(f"[BUDGET API] Returning {len(result['categories'])} rows from sheet {sheet_param}")
+        return jsonify(result)
+    except Exception as e:
+        print(f"Error in get_budget_data: {e}")
+        return jsonify({"error": str(e)}), 500
 
 # FACILITY
 @app.route('/operations')
@@ -153,26 +191,81 @@ def operations_page():
 @app.route('/api/operations/months')
 def get_ops_months():
     try:
+        sheet_param = request.args.get('sheet', 'Facility_2025-26')
+        print(f"[OPS MONTHS] Fetching months from sheet: {sheet_param}")
         client = get_gspread_client()
-        ss = client.open_by_url('https://docs.google.com/spreadsheets/d/1y0z3-WJrWZodXKzVcxTipmUA8zTXr8X-NmGXoUDB4Fw/edit')
-        df = pd.DataFrame(ss.worksheet('Sheet2').get_all_records())
-        return jsonify(df['Month'].unique().tolist())
-    except: return jsonify([])
+        ss = client.open_by_url('https://docs.google.com/spreadsheets/d/1YiXrlu6qxtorsoDThvB62HTVSuWE9BhQ9J-pbFH6dGc/edit')
+        try:
+            sheet = ss.worksheet(sheet_param)
+        except Exception:
+            print(f"Sheet '{sheet_param}' not found, using sheet1 as fallback")
+            sheet = ss.sheet1
+        df = pd.DataFrame(sheet.get_all_records())
+        months = df['Month'].dropna().unique().tolist() if 'Month' in df.columns else []
+        months_sorted = sorted(months, key=lambda x: str(x))
+        print(f"[OPS MONTHS] Found {len(months_sorted)} months")
+        return jsonify(months_sorted)
+    except Exception as e:
+        print(f"Error in get_ops_months: {e}")
+        return jsonify([])
 
 @app.route('/api/operations')
 def get_ops_data():
     month = request.args.get('month')
+    yearly = request.args.get('yearly')
+    sheet_param = request.args.get('sheet', 'Facility_2025-26')
+    print(f"[OPS API] Fetching from sheet: {sheet_param}, month: {month}, yearly: {yearly}")
     try:
         client = get_gspread_client()
-        ss = client.open_by_url('https://docs.google.com/spreadsheets/d/1y0z3-WJrWZodXKzVcxTipmUA8zTXr8X-NmGXoUDB4Fw/edit')
-        df = pd.DataFrame(ss.worksheet('Sheet2').get_all_records())
-        if month: df = df[df['Month'] == month]
-        
+        ss = client.open_by_url('https://docs.google.com/spreadsheets/d/1YiXrlu6qxtorsoDThvB62HTVSuWE9BhQ9J-pbFH6dGc/edit')
+        try:
+            sheet = ss.worksheet(sheet_param)
+        except Exception:
+            print(f"Sheet '{sheet_param}' not found, using sheet1 as fallback")
+            sheet = ss.sheet1
+        df = pd.DataFrame(sheet.get_all_records())
+        if month and not yearly:
+            df = df[df['Month'] == month]
+
+        # Normalize numeric columns
         for col in ['utilized', 'Capacity_month']:
-            df[col] = pd.to_numeric(df[col].astype(str).str.replace('%','').str.replace(',',''), errors='coerce').fillna(0)
-        
-        df['unused'] = (df['Capacity_month'] - df['utilized']).clip(lower=0)
-        return jsonify({'facilities': df['Games'].tolist(), 'used': df['utilized'].tolist(), 'unused': df['unused'].tolist()})
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col].astype(str).str.replace('%','').str.replace(',',''), errors='coerce').fillna(0)
+            else:
+                df[col] = 0
+
+        # Aggregate by Games to produce totals per facility (handles multiple months)
+        if 'Games' in df.columns:
+            grouped = df.groupby('Games', as_index=False).agg({
+                'Capacity_month': 'sum',
+                'utilized': 'sum'
+            })
+            grouped['unused'] = (grouped['Capacity_month'] - grouped['utilized']).clip(lower=0)
+            facilities = grouped['Games'].tolist()
+            used = grouped['utilized'].tolist()
+            unused = grouped['unused'].tolist()
+        else:
+            # Fallback if Games column missing
+            df['unused'] = (df['Capacity_month'] - df['utilized']).clip(lower=0)
+            facilities = df.index.astype(str).tolist()
+            used = df['utilized'].tolist()
+            unused = df['unused'].tolist()
+
+        # KPI metrics (total capacity and utilized across current filter/year)
+        total_capacity = float(df['Capacity_month'].sum())
+        total_utilized = float(df['utilized'].sum())
+        total_sports = int(df['Games'].nunique()) if 'Games' in df.columns else 0
+
+        return jsonify({
+            'facilities': facilities,
+            'used': used,
+            'unused': unused,
+            'kpis': {
+                'total_capacity': total_capacity,
+                'total_utilized': total_utilized,
+                'total_sports': total_sports
+            }
+        })
     except Exception as e: return jsonify({"error": str(e)}), 500
 
 #STAFF SUMMIT
@@ -181,35 +274,68 @@ def staff_summit_page():
     return render_template('staff.html')
 
 @app.route('/api/staff_data')
-@cache.cached(timeout=300)
+@cache.cached(timeout=300, query_string=True)
 def get_staff_data():
     try:
-        df = normalize_columns(get_dataframe_by_sheet_name('Staff Summit'))
-        df['Points'] = pd.to_numeric(df['Points'], errors='coerce').fillna(0)
+        sheet_param = request.args.get('sheet', 'Staff_Summit_2025-26')
+        print(f"[STAFF] Fetching Staff Summit data from sheet: {sheet_param}")
+        df = normalize_columns(get_dataframe_by_sheet_name(sheet_param))
+        print(f"[STAFF] Data shape: {df.shape}, Empty: {df.empty}")
         
-        kpi = {'totalAchievements': len(df), 'totalPoints': int(df['Points'].sum())}
-        gender = df.drop_duplicates(subset=['Name'])['Gender'].value_counts().reset_index()
-        dept = df['Department'].value_counts().head(25).reset_index()
-        dept_pts = df.groupby('Department')['Points'].sum().sort_values(ascending=False).head(25).reset_index()
-        sports = df['Sport'].value_counts().reset_index()
-
+        if df.empty:
+            print("[STAFF] WARNING: DataFrame is empty!")
+            return jsonify({"error": "No data found in Staff Summit sheet"}), 500
+        
+        df['Points'] = pd.to_numeric(df['Points'], errors='coerce').fillna(0)
+        df['Participants'] = pd.to_numeric(df['Participants'], errors='coerce').fillna(0)
+        
+        kpi = {
+            'totalAchievements': len(df), 
+            'totalPoints': int(df['Points'].sum()),
+            'totalParticipants': int(df['Participants'].sum()),
+            'totalSports': df['Sport'].nunique()
+        }
+        
+        gender = df.drop_duplicates(subset=['Name'])['Gender'].value_counts().to_dict()
+        dept_part = df.groupby('Department')['Participants'].sum().sort_values(ascending=False).head(25)
+        dept_pts = df.groupby('Department')['Points'].sum().sort_values(ascending=False).head(25)
+        sports = df['Sport'].value_counts().to_dict()
+        
+        print(f"[STAFF] KPI calculated: {kpi['totalAchievements']} records")
         return jsonify({
             'kpi': kpi, 
-            'gender': {'labels': gender['Gender'].tolist(), 'series': gender['count'].tolist()},
-            'department': {'categories': dept['Department'].tolist(), 'series': dept['count'].tolist()},
-            'department_points': {'categories': dept_pts['Department'].tolist(), 'series': dept_pts['Points'].tolist()},
-            'sports': {'labels': sports['Sport'].tolist(), 'series': sports['count'].tolist()}
+            'gender': {'labels': list(gender.keys()), 'series': list(gender.values())},
+            'department': {'categories': dept_part.index.tolist(), 'series': dept_part.values.tolist()},
+            'department_points': {'categories': dept_pts.index.tolist(), 'series': dept_pts.values.tolist()},
+            'sports': {'labels': list(sports.keys()), 'series': list(sports.values())}
         })
-    except Exception as e: return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        print(f"[STAFF] ERROR: {str(e)}")
+        print(traceback.format_exc())
+        return jsonify({"error": str(e), "type": type(e).__name__}), 500
 
 @app.route('/api/winners_by_sport')
+@cache.cached(timeout=300, query_string=True)
 def get_staff_winners():
     sport = request.args.get('sport')
+    sheet_param = request.args.get('sheet', 'Staff_Summit_2025-26')
     try:
-        df = normalize_columns(get_dataframe_by_sheet_name('Staff Summit'))
-        filtered = df[(df['Sport'] == sport) & (pd.to_numeric(df['Points'], errors='coerce').isin([10, 7, 5]))]
-        return jsonify(filtered.sort_values(by='Points', ascending=False).to_dict(orient='records'))
-    except Exception as e: return jsonify([])
+        sport_label = sport if sport else 'All'
+        print(f"[WINNERS] Fetching winners for sheet: {sheet_param}, sport: {sport_label}")
+        df = normalize_columns(get_dataframe_by_sheet_name(sheet_param))
+        if df.empty:
+            print("[WINNERS] WARNING: DataFrame is empty!")
+            return jsonify([])
+        df['Points'] = pd.to_numeric(df['Points'], errors='coerce').fillna(0)
+        if not sport or sport == 'All':
+            filtered = df[df['Points'].isin([10, 7, 5])].sort_values(by='Points', ascending=False)
+        else:
+            filtered = df[(df['Sport'] == sport) & (df['Points'].isin([10, 7, 5]))].sort_values(by='Points', ascending=False)
+        print(f"[WINNERS] Found {len(filtered)} winners for {sport_label}")
+        return jsonify(filtered.to_dict(orient='records'))
+    except Exception as e:
+        print(f"[WINNERS] ERROR: {str(e)}")
+        return jsonify([])
 
 # INTER-DEPARTMENT
 @app.route('/inter_department')
@@ -219,7 +345,13 @@ def inter_department_page():
 @app.route('/api/inter_department_data')
 def get_inter_dept_data():
     try:
-        df = get_dataframe_by_sheet_name("Inter_department")
+        # Accept explicit runtime target sheet identifiers over URL parameters
+        sheet_param = request.args.get('sheet', 'Inter_department_2025-26')
+        df = get_dataframe_by_sheet_name(sheet_param)
+        
+        if df.empty:
+            return jsonify({"error": "No data found for the selected sheet"}), 404
+            
         df['POINT'] = pd.to_numeric(df['POINT'], errors='coerce').fillna(0)
         df['Participants'] = pd.to_numeric(df['Participants'], errors='coerce').fillna(0)
         
@@ -234,17 +366,26 @@ def get_inter_dept_data():
             'schoolPoints': s_pts.rename(columns={'POINT':'Points'}).to_dict(orient='records'),
             'sportsParticipated': {'labels': s_grp['Sport'].tolist(), 'series': s_grp['Participants'].tolist()}
         })
-    except Exception as e: return jsonify({"error": str(e)}), 500
+    except Exception as e: 
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/inter_dept_participants')
 def get_inter_dept_list():
     l_type = request.args.get('type') 
+    sheet_param = request.args.get('sheet', 'Inter_department_2025-26')
     try:
-        df = get_dataframe_by_sheet_name("Inter_department")
+        # Dynamically pulls data based on the requested academic sheet context parameter 
+        df = get_dataframe_by_sheet_name(sheet_param)
+        
+        if df.empty:
+            return jsonify([])
+            
         if l_type in ['1st', '2nd', '3rd']:
-            df = df[df['RESULTS'].str.contains(l_type, case=False)]
+            df = df[df['RESULTS'].astype(str).str.contains(l_type, case=False)]
+            
         return jsonify(df[['NAME OF STUDENT', 'School', 'Sport', 'RESULTS', 'Event', 'Rank']].to_dict(orient='records'))
-    except Exception as e: return jsonify([])
+    except Exception as e: 
+        return jsonify([])
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
